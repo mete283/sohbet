@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sohbet Web - Canlı</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    
+    <div id="setup-container" class="card">
+        <h2>Webi - W</h2>
+        <input type="text" id="username" placeholder="Adınızı girin...">
+        
+        <div class="action-buttons">
+            <button onclick="createRoom()" class="primary-btn">Oda Oluştur</button>
+            <div class="separator">veya</div>
+            <input type="text" id="join-code-input" placeholder="Davet Kodunu Yapıştır">
+            <button onclick="joinRoom()" class="secondary-btn">Odaya Katıl</button>
+                                   <div class="separator">Powered By Mete</div>                                   
+                                    <div class="separator">[Realtime Database,Html,Css,Js Kullanılmıstır]</div>
+                                    <div class="separator">__________________________________</div>
+                                    <div class="separator">Sürüm Notları | ▼ | WEBİ - W v2.0.4</div>
+                                    <div class="separator">küfür,hakaret,tehdit,ayrımcılık sunucularimiz veya yetkililerimiz tarafindan fark edilirse yazi silinir ve kullnaici sistemden atılır lütfen kurallara uyunuz.</div>
+        </div>
+    </div>
+
+    <div id="chat-container" class="card chat-card" style="display: none;">
+        <div class="chat-header" style="display: flex; justify-content: space-between; align-items: center;">
+            <div onclick="copyCode()" style="cursor:pointer; text-align: left;">                      
+                <span id="display-room-code" title="Kopyalamak için tıkla">Kod: ----</span>
+                <br><small>(Kopyalamak için koda tıkla)</small>
+            </div>
+            <button onclick="leaveRoom()" style="width: auto; background: #dc3545; padding: 5px 12px; font-size: 13px; margin: 0;">Çık</button>
+        </div>
+       
+        <div id="chat-box"></div>
+        <div class="input-group">
+            <input type="text" id="message-input" placeholder="Mesaj yazın...">
+            <button onclick="sendMessage()">Gönder</button>
+        </div>
+    </div>
+
+    <script type="module" src="script.js"></script>
+</body>
+</html>
