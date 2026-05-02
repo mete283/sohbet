@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>Bakım Molası - Webi-W</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .maintenance-container { text-align: center; margin-top: 80px; }
+        #countdown { font-size: 32px; font-weight: bold; color: #2b457d; margin: 20px 0; font-family: 'Courier New', Courier, monospace; }
+        
+        .progress-wrapper { background: #e0e0e0; border-radius: 20px; height: 25px; width: 100%; margin: 20px 0; overflow: hidden; box-shadow: inset 0 2px 5px rgba(0,0,0,0.1); }
+        #progress-bar { 
+            background: linear-gradient(90deg, #2b457d, #00c853); 
+            height: 100%; width: 0%; transition: width 0.4s ease; 
+            display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 14px;
+        }
+        button.refresh-btn { background-color: #00c853; width: auto; padding: 10px 30px; cursor: pointer; }
+        .admin-login { margin-top: 60px; opacity: 0.2; }
+        .admin-login:hover { opacity: 1; }
+    </style>
+</head>
+<body>
+    <div class="card maintenance-container">
+        <h1>🛠️ Sistem Bakımda</h1>
+        <p>Webi-W şu an güncelleniyor. Lütfen bekleyin.</p>
+        
+        <div id="countdown">00:00:00</div>
+
+        <div class="progress-wrapper">
+            <div id="progress-bar">%0</div>
+        </div>
+
+        <button onclick="location.reload()" class="refresh-btn">Sayfayı Yenile</button>
+
+        <div class="admin-login">
+            <input type="password" id="maint-admin-pass" placeholder="Kod" style="width: 100px;">
+            <button onclick="checkMaintAdmin()" style="width: auto;">Gir</button>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // AYAR: Bakım kaç dakika sürecek?
+        const BAKIM_SURESI_DAKIKA = 10; 
+        // ==========================================
+
+        // Başlangıç vaktini tarayıcıya çivile (Sayfa yenilense de değişmez)
+        if (!localStorage.getItem('bakim_baslangic')) {
+            localStorage.setItem('bakim_baslangic', Date.now());
+        }
+
+        const baslangic = parseInt(localStorage.getItem('bakim_baslangic'));
+        const bitis = baslangic + (BAKIM_SURESI_DAKIKA * 60 * 1000);
+
+        function hesapla() {
+            const suan = Date.now();
+            const kalanMs = bitis - suan;
+            const toplamMs = bitis - baslangic;
+
+            // Bakım bitti mi?
+            if (kalanMs <= 0) {
+                document.getElementById("countdown").innerHTML = "BAKIM BİTTİ!";
+                document.getElementById("progress-bar").style.width = "100%";
+                document.getElementById("progress-bar").innerText = "%100";
+                return;
+            }
+
+            // Geri sayım formatla
+            const h = Math.floor(kalanMs / 3600000);
+            const m = Math.floor((kalanMs % 3600000) / 60000);
+            const s = Math.floor((kalanMs % 60000) / 1000);
+            const pad = (n) => n < 10 ? "0" + n : n;
+            document.getElementById("countdown").innerHTML = `${pad(h)}:${pad(m)}:${pad(s)}`;
+
+            // Yüzdeyi hesapla (Zaman geçtikçe artar)
+            const gecenMs = suan - baslangic;
+            let yuzde = Math.floor((gecenMs / toplamMs) * 100);
+            yuzde = Math.max(0, Math.min(100, yuzde)); // %0-%100 arası sınırla
+
+            document.getElementById("progress-bar").style.width = yuzde + "%";
+            document.getElementById("progress-bar").innerText = "%" + yuzde;
+        }
+
+        // Saniyede bir güncelle
+        setInterval(hesapla, 1000);
+        hesapla();
+
+        function checkMaintAdmin() {
+            if(document.getElementById('maint-admin-pass').value === "Admin.text") {
+                sessionStorage.setItem('maint_bypass', 'true');
+                window.location.href = "index.html";
+            } else { alert("Hatalı!"); }
+        }
+    </script>
+</body>
+</html>
