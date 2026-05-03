@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
+    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tio</title>
@@ -9,35 +10,44 @@
 <body>
     
     <div id="setup-container" class="card">
-        <h2>Tio - W</h2>
-        <div class="separator">Kullanıcı Adınızı girerek oda oluşturabilirsiniz</div>                 
-        <input type="text" id="username" placeholder="@Kullanıcı Adınızı girin...">
+        <h2>𝓣𝓲𝓸 - 𝓦</h2>
+        <div class="separator">𝑲𝒖𝒍𝒍𝒂𝒏ı𝒄ı 𝑨𝒅ı𝒏ı𝒛ı 𝒈𝒊𝒓𝒆𝒓𝒆𝒌 𝒐𝒅𝒂 𝒐𝒍𝒖ş𝒕𝒖𝒓𝒂𝒃𝒊𝒍𝒊𝒓𝒔𝒊𝒏𝒊𝒛</div>                 
+        <input type="text" id="username" placeholder="@𝘒𝘶𝘭𝘭𝘢𝘯ı𝘤ı 𝘈𝘥ı𝘯ı𝘻ı 𝘨𝘪𝘳𝘪𝘯...">
         
         <div class="action-buttons">
-            <button onclick="createRoom()" class="primary-btn">Oda Oluştur</button>
-            <div class="separator">veya</div>
-            <div class="separator">davet kodu ve kullanıcı adınızı girerek katılabilirsiniz</div>            
-            <input type="text" id="join-code-input" placeholder="Davet Kodunu Yapıştır">
-            <button onclick="joinRoom()" class="secondary-btn">Odaya Katıl</button>
+            <button onclick="createRoom()" class="primary-btn">𝙊𝙙𝙖 𝙊𝙡𝙪ş𝙩𝙪𝙧</button>
+            <div class="separator">𝘷𝘦𝘺𝘢</div>
+            <div class="separator">𝒅𝒂𝒗𝒆𝒕 𝒌𝒐𝒅𝒖 𝒗𝒆 𝒌𝒖𝒍𝒍𝒂𝒏ı𝒄ı 𝒂𝒅ı𝒏ı𝒛ı 𝒈𝒊𝒓𝒆𝒓𝒆𝒌 𝒌𝒂𝒕ı𝒍𝒂𝒃𝒊𝒍𝒊𝒓𝒔𝒊𝒏𝒊𝒛</div>            
+            <input type="text" id="join-code-input" placeholder="𝘋𝘢𝘷𝘦𝘵 𝘒𝘰𝘥𝘶𝘯𝘶 𝘠𝘢𝘱ış𝘵ı𝘳">
+            <button onclick="joinRoom()" class="secondary-btn">𝙊𝙙𝙖𝙮𝙖 𝙆𝙖𝙩ı𝙡</button>
             
                     <div class="separator">___________________________________________________</div>
-            <div class="separator">herkesin katılabilegi sohbet alanı</div>
+            <div class="separator">𝒉𝒆𝒓𝒌𝒆𝒔𝒊𝒏 𝒌𝒂𝒕ı𝒍𝒂𝒃𝒊𝒍𝒆ğ𝒊 𝒔𝒐𝒉𝒃𝒆𝒕 𝒂𝒍𝒂𝒏ı</div>
             <button onclick="window.location.href='canli.html'" class="global-btn" style="background-color: #ff9800; margin-top: 10px;">
-    🌍 Global Chat (Beta)
+    🌍 𝙂𝙡𝙤𝙗𝙖𝙡 𝘾𝙝𝙖𝙩 (Beta 1.0)
 </button>
-            
-            <div class="separator">___________________________________________________</div>
+                        
+                                <div class="separator">___________________________________________________</div>
+                                            <div class="separator">yeni eşleşme sistemi özelliği suanda yapım aşamasındadır (özelliği deneyebilirsiniz)</div>
+            <div style="text-align: center; margin-top: 20px;">
+    <button onclick="window.location.href='otomatik.html'" class="nav-btn">
+        𝙍𝙖𝙨𝙩𝙜𝙚𝙡𝙚 𝙠𝙪𝙡𝙡𝙖𝙣ı𝙘ı 𝙗𝙪𝙡 (Beta 1.2)
+    </button>
+</div>
+
+                                <div class="separator">___________________________________________________</div>
+
 <div id="admin-login-area" style="margin-top: 20px;">
-    <small style="color: #546e7a; display: block; margin-bottom: 5px;">Yöneticiyseniz kodu giriniz:</small>
+    <small style="color: #546e7a; display: block; margin-bottom: 5px;">𝙔ö𝙣𝙚𝙩𝙞𝙘𝙞𝙮𝙨𝙚𝙣𝙞𝙯 𝙠𝙤𝙙𝙪 𝙜𝙞𝙧𝙞𝙣𝙞𝙯:</small>
     <div style="display: flex; gap: 5px;">
-        <input type="password" id="admin-pass-input" placeholder="Yönetici Kodu" style="margin: 0; padding: 8px;">
-        <button onclick="checkAdminLogin()" style="width: auto; padding: 0 15px; margin: 0; background: #546e7a;">Devam</button>
+        <input type="password" id="admin-pass-input" placeholder="𝘠ö𝘯𝘦𝘵𝘪𝘤𝘪 𝘒𝘰𝘥𝘶" style="margin: 0; padding: 8px;">
+        <button onclick="checkAdminLogin()" style="width: auto; padding: 0 15px; margin: 0; background: #546e7a;">𝘿𝙚𝙫𝙖𝙢</button>
     </div>
 </div>
 
                                     <div class="separator"></div>                                   
                                     <div class="separator">___________________________________________________</div>
-                                    <div class="separator">Powered By Mete | Tio - W v1.0.4</div>            
+                                    <div class="separator">𝑷𝒐𝒘𝒆𝒓𝒆𝒅 𝑩𝒚 𝑴𝒆𝒕𝒆 | Tio - W v1.0.3</div>            
                                     <div class="separator"></div>           
         </div>
     </div>
@@ -46,15 +56,15 @@
         <div class="chat-header" style="display: flex; justify-content: space-between; align-items: center;">
             <div onclick="copyCode()" style="cursor:pointer; text-align: left;">                      
                 <span id="display-room-code" title="Kopyalamak için tıkla">Kod: ----</span>
-                <br><small>(Kopyalamak için koda tıkla)</small>
+                <br><small>(𝐾𝑜𝑝𝑦𝑎𝑙𝑎𝑚𝑎𝑘 𝑖ç𝑖𝑛 𝑘𝑜𝑑𝑎 𝑡ı𝑘𝑙𝑎)</small>
             </div>
             <button onclick="leaveRoom()" style="width: auto; background: #dc3545; padding: 5px 12px; font-size: 13px; margin: 0;">Çık</button>
         </div>
        
         <div id="chat-box"></div>
         <div class="input-group">
-            <input type="text" id="message-input" placeholder="Mesaj yazın...">
-            <button onclick="sendMessage()">Gönder</button>
+            <input type="text" id="message-input" placeholder="𝑀𝑒𝑠𝑎𝑗 𝑦𝑎𝑧ı𝑛...">
+            <button onclick="sendMessage()">𝙂ö𝙣𝙙𝙚𝙧</button>
         </div>
     </div>
 
