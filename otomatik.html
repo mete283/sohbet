@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tio | Canlı Eşleşme</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f0f2f5;
+            font-family: sans-serif;
+        }
+        .card {
+            width: 90%;
+            max-width: 400px;
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        #match-area { display: none; flex-direction: column; width: 100%; height: 500px; }
+        #setup-area, #waiting-area { width: 100%; text-align: center; }
+        
+        #chat-box { 
+            height: 350px; 
+            overflow-y: auto; 
+            background: #f8f9fa; 
+            border: 1px solid #eee; 
+            border-radius: 10px; 
+            padding: 10px; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+        .message { max-width: 80%; padding: 8px 12px; border-radius: 15px; font-size: 14px; }
+        .my-msg { align-self: flex-end; background: #2b457d; color: white; }
+        .other-msg { align-self: flex-start; background: #e9ecef; color: #333; }
+        .system-msg { align-self: center; font-size: 11px; background: #dee2e6; padding: 3px 10px; border-radius: 10px; color: #495057; }
+        
+        input[type="text"] { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+        button { width: 100%; padding: 10px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        .primary-btn { background: #2b457d; color: white; }
+        .loading-spinner { border: 4px solid #f3f3f3; border-top: 4px solid #2b457d; border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; margin: 15px auto; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div id="setup-area">
+            <h2>✨ Hoş Geldin</h2>
+            <p>Eşleşmek için bir isim girin</p>
+            <input type="text" id="match-username" placeholder="İsminiz...">
+            <button id="start-btn" class="primary-btn">Eşleşme Ara</button>
+            <button onclick="window.location.href='index.html'" style="background:none; color:#546e7a; margin-top:5px;">Geri Dön</button>
+        </div>
+
+        <div id="waiting-area" style="display: none;">
+            <h2>🔍 Aranıyor</h2>
+            <div class="loading-spinner"></div>
+            <p>Uygun bir kullanıcı aranıyor...</p>
+            <button onclick="location.reload()" style="background:#ff4757; color:white;">Vazgeç</button>
+        </div>
+
+        <div id="match-area">
+            <div id="chat-box"></div>
+            <div style="display:flex; gap:5px;">
+                <input type="text" id="match-message-input" placeholder="Mesaj yaz..." style="margin:0;">
+                <button id="send-match-btn" style="width:70px; background:#2b457d; color:white;">Gönder</button>
+            </div>
+            <div style="display:flex; gap:5px; margin-top:10px;">
+                <button onclick="nextPerson()" style="background:#ffa502; color:white;">✨ Yeni Kişi</button>
+                <button onclick="window.location.href='index.html'" style="background:#546e7a; color:white;">Çık</button>
+            </div>
+        </div>
+    </div>
+    <script type="module" src="otomatik.js"></script>
+</body>
+</html>
