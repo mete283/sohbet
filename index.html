@@ -1,0 +1,2082 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Lui AI</title>
+    
+    
+    
+    <script>
+(function () {
+  try {
+    if (localStorage.getItem('lumea-theme') === 'dark') {
+      document.documentElement.setAttribute('data-theme', 'dark');
+    }
+  } catch (e) {}
+})();
+</script>
+    
+    
+    
+    
+    <script src="sifresor.js"></script>
+    <style>
+    html { background-color: #f2f3f7; }
+html[data-theme="dark"] { background-color: #0d0d10; }
+    
+    
+    
+    
+   
+        :root {
+            --bg-color: #f2f3f7;
+            --text-color: #1c1c1e;
+            --glass-bg: #ffffff;
+            --glass-border: rgba(0, 0, 0, 0.08);
+            --glider-bg: #f2f3f7;
+            --input-placeholder: #8e8e93;
+            --user-bubble: #007aff;
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #0d0d10;
+            --text-color: #f2f2f7;
+            --glass-bg: #1c1c22;
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --glider-bg: #2c2c32;
+            --input-placeholder: #636366;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", system-ui, Roboto, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            min-height: 100dvh;
+            overflow: hidden;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            transition: background-color 0.2s ease, color 0.2s ease;
+        }
+
+        .liquid-glass {
+            position: relative;
+            overflow: hidden;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+        }
+
+        .liquid-glass::before,
+        .liquid-glass::after {
+            content: none !important;
+            display: none !important;
+        }
+
+        .top-bar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px 6px;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 10;
+            background: transparent;
+            min-height: 58px;
+            pointer-events: none;
+        }
+        .top-bar > * {
+            pointer-events: auto;
+        }
+
+        .icon-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            flex-shrink: 0;
+            text-decoration: none;
+            transition: transform 0.18s cubic-bezier(0.2, 0.8, 0.2, 1);
+            touch-action: manipulation;
+        }
+
+        .icon-btn svg {
+            width: 20px;
+            height: 20px;
+            stroke: var(--text-color);
+            stroke-width: 2;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .icon-btn.is-pressed {
+            transform: scale(0.90);
+            transition: transform 0.12s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+
+        .icon-btn.dragging-elastic {
+            transition: none !important;
+            transform:
+                translate3d(var(--drag-x, 0px), var(--drag-y, 0px), 0)
+                scaleX(var(--drag-sx, 1))
+                scaleY(var(--drag-sy, 1))
+                rotate(var(--drag-rot, 0deg));
+        }
+
+        .icon-btn.elastic-return {
+            transition: transform .48s cubic-bezier(.16,1,.3,1) !important;
+            transform: translate3d(0,0,0) scaleX(1) scaleY(1) rotate(0deg) !important;
+        }
+
+        .icon-btn .specular { display: none; }
+
+        .model-capsule {
+            flex: 0 1 auto;
+            overflow: hidden;
+            width: min(260px, 58vw);
+            max-width: 300px;
+            min-width: 160px;
+            height: 40px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            position: relative;
+            padding: 2px;
+            touch-action: none;
+            -webkit-user-select: none;
+            cursor: pointer;
+        }
+
+        .slider-glider {
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: calc((100% - 6px) / 2);
+            height: 34px;
+            border-radius: 17px;
+            background: var(--glider-bg);
+            pointer-events: none;
+            z-index: 1;
+            transform-origin: center center;
+            transition: none;
+        }
+
+        .model-option {
+            flex: 1 1 0;
+            min-width: 0;
+            text-align: center;
+            font-size: 13px;
+            font-weight: 600;
+            color: #8e8e93;
+            z-index: 2;
+            cursor: pointer;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: color 0.3s ease;
+            padding: 0 2px;
+        }
+        .model-option.active { color: var(--text-color); }
+
+        .top-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-left: auto;
+            flex-shrink: 0;
+        }
+        .top-actions .icon-btn {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            outline: none !important;
+            box-shadow: none !important;
+            color: var(--text-color);
+        }
+        [data-theme="dark"] .top-actions .icon-btn {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            color: var(--text-color);
+        }
+
+        .chat-container {
+            flex: 1 1 auto;
+            min-height: 0;
+            padding: 68px 16px 170px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            scrollbar-gutter: stable;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            -webkit-overflow-scrolling: touch;
+            position: relative;
+            z-index: 1;
+            background: transparent;
+        }
+
+        .message {
+            max-width: min(82%, 720px);
+            width: fit-content;
+            flex: 0 0 auto;
+            align-self: flex-start;
+            min-width: 0;
+            padding: 12px 16px;
+            border-radius: 20px;
+            font-size: 15px;
+            line-height: 1.45;
+            word-break: break-word;
+            user-select: text !important;
+            -webkit-user-select: text !important;
+            -moz-user-select: text !important;
+            -ms-user-select: text !important;
+            -webkit-touch-callout: default !important;
+            cursor: text;
+            touch-action: manipulation;
+        }
+        .message *,
+        .message *::before,
+        .message *::after {
+            user-select: text !important;
+            -webkit-user-select: text !important;
+            -moz-user-select: text !important;
+            -webkit-touch-callout: default !important;
+        }
+        .message.user {
+            align-self: flex-end;
+            background: var(--user-bubble, #007aff);
+            color: #ffffff;
+            border-bottom-right-radius: 4px;
+        }
+        .message.ai {
+            align-self: flex-start;
+            color: var(--text-color);
+            background: transparent;
+            border: none;
+            border-radius: 0;
+            padding: 6px 2px 8px;
+            margin-top: 6px;
+            max-width: min(92%, 820px);
+            user-select: text !important;
+            -webkit-user-select: text !important;
+            -webkit-touch-callout: default !important;
+            cursor: text;
+        }
+        /* Gemini / Grok tarzı yanıt biçimi */
+        .message.ai strong {
+            font-weight: 700;
+            color: var(--text-color);
+        }
+        .message.ai em {
+            font-style: italic;
+            opacity: 0.92;
+        }
+        .message.ai .md-p {
+            margin: 0 0 10px 0;
+            line-height: 1.5;
+        }
+        .message.ai .md-p:last-child {
+            margin-bottom: 0;
+        }
+        .message.ai .md-ul {
+            margin: 6px 0 12px 0;
+            padding-left: 0;
+            list-style: none;
+        }
+        .message.ai .md-ul li {
+            position: relative;
+            padding-left: 18px;
+            margin-bottom: 6px;
+            line-height: 1.45;
+        }
+        .message.ai .md-ul li::before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            top: 0;
+            color: #007aff;
+            font-weight: 700;
+        }
+        [data-theme="dark"] .message.ai .md-ul li::before {
+            color: #0a84ff;
+        }
+        .message.ai a {
+            color: #007aff;
+            text-decoration: none;
+            word-break: break-all;
+        }
+        [data-theme="dark"] .message.ai a {
+            color: #0a84ff;
+        }
+        .message.ai.typing {
+            word-break: break-word;
+        }
+        .message.ai.typing::after {
+            content: '';
+            display: inline-block;
+            width: 2px;
+            height: 1.05em;
+            background: currentColor;
+            margin-left: 3px;
+            border-radius: 1px;
+            vertical-align: -0.12em;
+            animation: lumea-cursor-blink 0.85s step-end infinite;
+            opacity: 0.85;
+        }
+        @keyframes lumea-cursor-blink {
+            0%, 100% { opacity: 0.85; }
+            50% { opacity: 0; }
+        }
+        .msg-meta {
+            align-self: flex-start;
+            font-size: 11px;
+            color: var(--input-placeholder, #8e8e93);
+            padding: 0 4px 2px;
+            margin-top: -6px;
+            margin-bottom: 2px;
+            user-select: none;
+            -webkit-user-select: none;
+            pointer-events: none;
+        }
+
+        .msg-actions {
+            align-self: flex-start;
+            display: flex;
+            align-items: center;
+            gap: 2px;
+            padding: 0 0 4px 0;
+            margin-top: -4px;
+            margin-bottom: 4px;
+            min-height: 36px;
+        }
+        .msg-action-btn {
+            width: 34px;
+            height: 34px;
+            border-radius: 10px;
+            border: none;
+            background: transparent;
+            color: var(--input-placeholder, #8e8e93);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            padding: 0;
+            transition: background 0.15s ease, color 0.15s ease, transform 0.12s ease;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .msg-action-btn:active {
+            transform: scale(0.9);
+            background: rgba(128, 128, 128, 0.12);
+        }
+        .msg-action-btn svg {
+            width: 16px;
+            height: 16px;
+            stroke: currentColor;
+            fill: none;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            pointer-events: none;
+        }
+        .msg-action-btn.copied {
+            color: #34c759;
+        }
+        [data-theme="dark"] .msg-action-btn:active {
+            background: rgba(255, 255, 255, 0.08);
+        }
+        
+        .thinking-wrap {
+            align-self: flex-start;
+            margin-top: -2px;
+            margin-bottom: 6px;
+            animation: thinking-in 0.32s cubic-bezier(.22,1,.36,1) both;
+        }
+        @keyframes thinking-in {
+            from { opacity: 0; transform: scale(0.88) translateY(6px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        /* 3 nokta: sırayla zıplayıp yere iner (dalga) – açık pastel */
+        .thinking-wave {
+            display: flex;
+            align-items: flex-end;
+            gap: 7px;
+            height: 30px;
+            padding: 0 6px;
+        }
+        .thinking-wave span {
+            display: block;
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            background: #a8c5ff;
+            box-shadow: none;
+            transform-origin: 50% 100%;
+            animation: thinking-wave-bounce 1.2s cubic-bezier(.33,0,.4,1) infinite;
+        }
+        .thinking-wave span:nth-child(1) { background: #b8d0ff; }
+        .thinking-wave span:nth-child(2) { background: #c5b8f0; }
+        .thinking-wave span:nth-child(3) { background: #a8d4f0; }
+        [data-theme="dark"] .thinking-wave span:nth-child(1) { background: #7a9fd4; }
+        [data-theme="dark"] .thinking-wave span:nth-child(2) { background: #8a7ab8; }
+        [data-theme="dark"] .thinking-wave span:nth-child(3) { background: #6a9ab8; }
+        .thinking-wave span:nth-child(2) { animation-delay: 0.16s; }
+        .thinking-wave span:nth-child(3) { animation-delay: 0.32s; }
+        @keyframes thinking-wave-bounce {
+            0%   { transform: translateY(0) scale(1, 1); }
+            8%   { transform: translateY(0) scale(1.15, 0.85); }
+            32%  { transform: translateY(-16px) scale(0.95, 1.08); }
+            56%  { transform: translateY(0) scale(1, 1); }
+            64%  { transform: translateY(0) scale(1.18, 0.82); }
+            72%, 100% { transform: translateY(0) scale(1, 1); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .message.ai.typing::after { animation: none; opacity: 0.6; }
+            .thinking-wave span { animation: none; opacity: 0.7; }
+            .thinking-wrap { animation: none; }
+        }
+
+.jump-bottom {
+    position: absolute;
+    right: 16px;
+    bottom: calc(100px + env(safe-area-inset-bottom, 0px));
+    z-index: 25;
+    width: 42px;
+    height: 42px;
+    border-radius: 21px;
+    border: 1px solid var(--glass-border);
+    background: var(--glass-bg);
+    color: var(--text-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 18px rgba(0,0,0,0.14);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(10px) scale(0.9);
+    /* bottom, input yüksekliğiyle anlık senkron */
+    transition: opacity 0.22s ease, transform 0.22s ease, bottom 0.28s cubic-bezier(.22,1,.36,1);
+}
+
+        .jump-bottom.show {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0) scale(1);
+        }
+        .jump-bottom:active { transform: scale(0.9); }
+        .jump-bottom svg {
+            width: 18px;
+            height: 18px;
+            stroke: currentColor;
+            fill: none;
+            stroke-width: 2.3;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+        [data-theme="dark"] .jump-bottom {
+            background: #2c2c32;
+            box-shadow: 0 4px 18px rgba(0,0,0,0.4);
+        }
+
+        .input-bar {
+            width: 100%;
+            padding: 8px 14px max(36px, env(safe-area-inset-bottom));
+            display: flex;
+            justify-content: center;
+            z-index: 20;
+            background: transparent;
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+            flex-shrink: 0;
+        }
+        .input-bar > * {
+            pointer-events: auto;
+        }
+
+        .input-capsule {
+            width: 100%;
+            max-width: 820px;
+            min-width: 126px;
+            /* Tek satır: sabit 100px; çok satırda is-multiline ile büyür */
+            height: 100px;
+            min-height: 100px;
+            max-height: 100px;
+            border-radius: 22px;
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            justify-content: flex-start;
+            padding: 10px 12px 8px;
+            gap: 6px;
+            transition: none !important;
+            position: relative;
+            overflow: hidden;
+            box-sizing: border-box;
+            flex-shrink: 0;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+        }
+        .input-capsule:focus-within,
+        .input-capsule.has-text {
+            /* tek satırda boyut sabit kalır */
+        }
+        /* Yazı uzadıkça / Enter ile çok satır */
+        .input-capsule.is-multiline {
+            height: auto;
+            min-height: 100px;
+            max-height: 220px;
+        }
+        .input-actions {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            flex: 0 0 36px;
+            height: 36px;
+            min-height: 36px;
+            max-height: 36px;
+            flex-shrink: 0;
+        }
+        .think-btn {
+            flex-shrink: 0;
+            height: 34px;
+            min-width: 34px;
+            padding: 0 12px;
+            border-radius: 17px;
+            border: 1px solid var(--glass-border);
+            background: var(--glider-bg);
+            color: var(--input-placeholder);
+            font-size: 12px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            cursor: pointer;
+            margin: 0;
+            transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+        .think-btn svg {
+            width: 14px;
+            height: 14px;
+            stroke: currentColor;
+            fill: none;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            flex-shrink: 0;
+        }
+        .think-btn.active {
+            background: rgba(0, 122, 255, 0.14);
+            color: #007aff;
+            border-color: rgba(0, 122, 255, 0.35);
+        }
+        [data-theme="dark"] .think-btn.active {
+            background: rgba(10, 132, 255, 0.2);
+            color: #0a84ff;
+            border-color: rgba(10, 132, 255, 0.4);
+        }
+        .think-btn:active { transform: scale(0.94); }
+        .input-left {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            min-width: 0;
+        }
+        .web-btn.active {
+            background: rgba(52, 199, 89, 0.14);
+            color: #248a3d;
+            border-color: rgba(52, 199, 89, 0.4);
+        }
+        [data-theme="dark"] .web-btn.active {
+            background: rgba(48, 209, 88, 0.2);
+            color: #30d158;
+            border-color: rgba(48, 209, 88, 0.45);
+        }
+        .think-btn.disabled-model {
+            opacity: 0.45;
+            pointer-events: none;
+        }
+        .input-capsule textarea {
+            flex: 0 0 36px;
+            min-width: 0;
+            width: 100%;
+            height: 36px;
+            min-height: 36px;
+            max-height: 36px;
+            resize: none;
+            overflow-y: hidden;
+            border: none;
+            outline: none;
+            background: transparent;
+            font-size: 16px;
+            line-height: 20px;
+            color: var(--text-color);
+            z-index: 2;
+            padding: 8px 2px;
+            margin: 0;
+            user-select: text;
+            -webkit-user-select: text;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+            field-sizing: content;
+            box-sizing: border-box;
+            flex-shrink: 0;
+        }
+        .input-capsule.is-multiline textarea {
+            flex: 1 1 auto;
+            height: auto;
+            min-height: 36px;
+            max-height: 120px;
+            overflow-y: auto;
+        }
+        .input-capsule textarea::-webkit-scrollbar { width: 3px; }
+        .input-capsule textarea::placeholder {
+            color: var(--input-placeholder);
+            font-weight: 400;
+        }
+
+        .send-btn {
+            width: 36px; height: 36px;
+            border-radius: 18px;
+            background: #c7c7cc;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 2;
+            flex-shrink: 0;
+            margin: 0;
+            padding: 0;
+            transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275), background 0.2s ease;
+            pointer-events: none;
+        }
+        [data-theme="dark"] .send-btn {
+            background: #3a3a3c;
+        }
+        .send-btn.has-text,
+        .send-btn.is-stop {
+            background: #007aff;
+            pointer-events: auto;
+        }
+        [data-theme="dark"] .send-btn.has-text,
+        [data-theme="dark"] .send-btn.is-stop {
+            background: #0a84ff;
+        }
+        .send-btn.has-text:active,
+        .send-btn.is-stop:active {
+            transform: scale(0.88);
+        }
+        .send-btn svg {
+            width: 18px; height: 18px;
+            fill: none;
+            stroke: #ffffff;
+            stroke-width: 2.4;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            margin: 0;
+            display: block;
+        }
+        .send-btn.is-stop svg {
+            margin: 0;
+            width: 14px;
+            height: 14px;
+            fill: #ffffff;
+            stroke: none;
+        }
+
+        
+
+        /* Düşünce süreci collapsible */
+        .think-block {
+            margin: 0 0 12px 0;
+            border-radius: 14px;
+            border: 1px solid var(--glass-border);
+            background: rgba(128,128,128,0.06);
+            overflow: hidden;
+        }
+        .think-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            padding: 10px 12px;
+            cursor: pointer;
+            user-select: none;
+            -webkit-user-select: none;
+            pointer-events: auto;
+            position: relative;
+            z-index: 2;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .message.ai.typing .think-header {
+            pointer-events: auto;
+        }
+        .message.ai.typing .think-block {
+            /* yazım sırasında yükseklik zıplamasını engelle */
+            contain: layout style;
+        }
+        .ai-main-stream {
+            min-height: 0;
+        }
+        .think-header-title {
+            font-size: 13px;
+            font-weight: 650;
+            color: var(--text-color);
+            opacity: 0.85;
+        }
+        .think-chevron {
+            width: 16px;
+            height: 16px;
+            stroke: var(--input-placeholder);
+            fill: none;
+            stroke-width: 2.2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            transition: transform 0.22s ease;
+            flex-shrink: 0;
+        }
+        .think-block.collapsed .think-chevron {
+            transform: rotate(-90deg);
+        }
+        .think-body {
+            padding: 0 12px 10px;
+            font-size: 12.5px;
+            line-height: 1.45;
+            color: var(--input-placeholder);
+        }
+        .think-block.collapsed .think-body {
+            display: none;
+        }
+
+        .chat-container::-webkit-scrollbar { width: 3px; }
+        .chat-container::-webkit-scrollbar-track { background: transparent; }
+        .chat-container::-webkit-scrollbar-thumb {
+            background: rgba(128, 128, 128, 0.3);
+            border-radius: 10px;
+        }
+
+        @media (max-width: 430px) {
+            .top-bar { gap: 8px; padding: 8px 12px 4px; min-height: 52px; }
+            .chat-container { padding: 60px 12px 150px; gap: 12px; }
+            .icon-btn { width: 38px; height: 38px; }
+            .icon-btn svg { width: 18px; height: 18px; }
+            
+            .model-capsule { min-width: 140px; width: auto; max-width: 220px; height: 36px; }
+            .slider-glider { height: 30px; top: 3px; }
+            .model-option { font-size: 12px; }
+            
+            .message { max-width: 90%; padding: 10px 14px; font-size: 14px; }
+.input-bar { padding: 6px 10px max(44px, env(safe-area-inset-bottom)); }
+            .input-capsule {
+                width: 100%;
+                min-width: 120px;
+                height: auto; min-height: 84px; max-height: 200px;
+                padding: 8px 10px 6px; border-radius: 20px;
+            }
+            .input-capsule:focus-within,
+            .input-capsule.has-text { width: 100%; border-radius: 20px; }
+            .think-btn { height: 30px; padding: 0 10px; font-size: 11px; margin: 0; }
+            .input-capsule textarea { height: 36px; min-height: 36px; max-height: 120px; font-size: 14px; }
+            .send-btn { width: 34px; height: 34px; border-radius: 17px; }
+            .send-btn { width: 34px; height: 34px; border-radius: 17px; margin: 0 0 2px 0; padding: 0; }
+            .send-btn svg { width: 13px; height: 13px; margin: 0; }
+        }
+
+        @media (max-width: 380px) {
+            .top-bar { gap: 8px; padding: 6px 10px 4px; min-height: 48px; }
+            .chat-container { padding: 56px 12px 150px; }
+            .model-option { font-size: 10px; }
+            
+            .model-capsule { min-width: 120px; max-width: 180px; height: 32px; }
+            .slider-glider { height: 26px; top: 3px; }
+            .icon-btn { width: 34px; height: 34px; }
+            .icon-btn svg { width: 16px; height: 16px; }
+            
+            .input-capsule {
+                width: 100%;
+                min-width: 100px;
+                height: auto; min-height: 80px; max-height: 190px;
+            }
+            .input-capsule:focus-within,
+            .input-capsule.has-text { width: 100%; border-radius: 18px; }
+            .think-btn { height: 28px; padding: 0 8px; font-size: 11px; margin: 0; }
+            .input-capsule textarea { height: 34px; min-height: 34px; max-height: 110px; font-size: 13px; }
+            .send-btn { width: 32px; height: 32px; border-radius: 16px; }
+            .send-btn { width: 30px; height: 30px; border-radius: 15px; margin: 0 0 2px 0; padding: 0; }
+            .send-btn svg { width: 12px; height: 12px; margin: 0; }
+            .message { font-size: 13px; padding: 8px 12px; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .liquid-glass::after, .liquid-glass::before { animation: none !important; }
+            * { scroll-behavior: auto !important; }
+        }
+
+        .greeting {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+            z-index: 2;
+            padding: 0 24px;
+        }
+        .greeting.hide { display: none; }
+        .greeting-text {
+            font-size: clamp(28px, 7vw, 48px);
+            font-weight: 500;
+            letter-spacing: -0.03em;
+            color: #9a9aa2;
+            opacity: 0;
+            transform: translateY(-22px);
+            animation: greetIn 1.4s ease forwards;
+            text-align: center;
+            max-width: 100%;
+            word-break: break-word;
+            overflow-wrap: anywhere;
+            white-space: normal;
+            line-height: 1.25;
+        }
+
+        [data-theme="dark"] .greeting-text { color: #6e6e76; }
+        @keyframes greetIn {
+            0% { opacity: 0; transform: translateY(-12px); }
+            100% { opacity: 0.82; transform: translateY(0); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .greeting-text { animation: none !important; opacity: 0.82; transform: none; }
+        }
+
+    </style>
+</head>
+<body>
+
+    
+    <div class="top-bar">
+        <div class="model-capsule liquid-glass" id="capsule">
+            <div class="slider-glider" id="glider"></div>
+            <div class="model-option active" data-index="0">Lite 1.0</div>
+            <div class="model-option" data-index="1">Pro 1.0</div>
+        </div>
+
+        <div class="top-actions">
+            <button class="icon-btn" id="btnChats" type="button" aria-label="Sohbetler" title="Sohbetler">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                </svg>
+            </button>
+            <button class="icon-btn" id="btnSettings" type="button" aria-label="Ayarlar" title="Ayarlar">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 1 0-2 3.46l.15.08a2 2 0 0 1 1 1.73v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 1 0 2 3.46l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 1 0 2-3.46l-.15-.08a2 2 0 0 1-1-1.73v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 1 0-2-3.46l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>
+                    <circle cx="12" cy="12" r="3"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <div class="chat-container" id="chat"></div>
+    <div class="greeting" id="greeting">
+        <div class="greeting-text" id="greetingText">Merhaba</div>
+    </div>
+
+    <button type="button" class="jump-bottom" id="jumpBottom" aria-label="En alta in">
+        <svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+    </button>
+
+    <div class="input-bar">
+        <div class="input-capsule liquid-glass" id="inputCapsule">
+            <textarea id="userInput" placeholder="Lui'ya sorun..." autocomplete="off" rows="1" spellcheck="true" enterkeyhint="enter" inputmode="text"></textarea>
+            <div class="input-actions">
+                <div class="input-left">
+                    <button type="button" class="think-btn" id="thinkBtn" aria-label="Düşün" title="Düşün">
+                        <svg viewBox="0 0 24 24"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2z"/></svg>
+                        <span>Düşün</span>
+                    </button>
+                    <button type="button" class="think-btn web-btn" id="webBtn" aria-label="Webde ara" aria-pressed="false" title="Webde ara">
+                        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                        <span>Webde ara</span>
+                    </button>
+                </div>
+                <button class="send-btn" id="sendBtn" aria-label="Gönder">
+                    <svg viewBox="0 0 24 24"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+function checkCustomResponse(text) {
+    try {
+        const responses = JSON.parse(localStorage.getItem('lumea-custom-responses') || '[]');
+        if (!Array.isArray(responses) || responses.length === 0) return null;
+
+        // Noktalama temizle; sadece tam eşleşme (kısmi yok: "S" != "Selam")
+        function normalize(s) {
+            return String(s || '').trim().toLowerCase()
+                .replace(/[?!.,;:…]+$/g, '').replace(/\s+/g, ' ').trim();
+        }
+        const qn = normalize(text);
+        if (!qn) return null;
+        for (const item of responses) {
+            const question = normalize(item.question);
+            if (!question) continue;
+            if (qn === question) return item.answer;
+        }
+        return null;
+    } catch (e) {
+        console.warn('Özel yanıt kontrolü hatası:', e);
+        return null;
+    }
+}
+</script>
+<script src="web.js"></script>
+<script src="lite.js"></script>
+<script src="pro.js"></script>
+    <script>
+        (function() {
+            'use strict';
+
+            const capsule = document.getElementById('capsule');
+            const glider = document.getElementById('glider');
+            const options = [...document.querySelectorAll('.model-option')];
+            const models = ['lite', 'pro'];
+            const chat = document.getElementById('chat');
+            const userInput = document.getElementById('userInput');
+            const inputCapsule = document.getElementById('inputCapsule');
+            const sendBtn = document.getElementById('sendBtn');
+            const greeting = document.getElementById('greeting');
+
+            const CHATS_KEY = 'lumea-chats';
+            const ACTIVE_KEY = 'lumea-active-chat';
+            const THEME_KEY = 'lumea-theme';
+            const MODEL_KEY = 'lumea-selected-model';
+
+            function loadChats() {
+                try { return JSON.parse(localStorage.getItem(CHATS_KEY) || '[]'); }
+                catch (_) { return []; }
+            }
+            function saveChats(chats) {
+                localStorage.setItem(CHATS_KEY, JSON.stringify(chats));
+            }
+            function uid() {
+                return 'c' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+            }
+            function getActiveChat() {
+                const id = localStorage.getItem(ACTIVE_KEY);
+                const chats = loadChats();
+                return chats.find(c => c.id === id) || null;
+            }
+            function persistActive(messages, title) {
+                const chats = loadChats();
+                let id = localStorage.getItem(ACTIVE_KEY);
+                let chat = chats.find(c => c.id === id);
+                const now = Date.now();
+
+                if (!chat) {
+                    chat = { 
+                        id: uid(), 
+                        title: title || 'Yeni sohbet', 
+                        model: currentModel, 
+                        messages: [], 
+                        created: now, 
+                        updated: now, 
+                        pinned: false 
+                    };
+                    chats.push(chat);
+                    localStorage.setItem(ACTIVE_KEY, chat.id);
+                }
+                chat.messages = messages;
+                chat.model = currentModel;
+                chat.updated = now;
+                if (title && (!chat.title || chat.title === 'Yeni sohbet')) chat.title = title;
+                saveChats(chats);
+            }
+
+            const savedModel = localStorage.getItem(MODEL_KEY);
+            let currentModel = models.includes(savedModel) ? savedModel : 'lite';
+            let currentIndex = models.indexOf(currentModel);
+            let dragStartX = 0;
+            let dragStartPosition = 0;
+            let draggingModel = false;
+            let activePointerId = null;
+            let isAnimating = false;
+
+            function getSliderMetrics() {
+                const rect = capsule.getBoundingClientRect();
+                const innerWidth = Math.max(0, rect.width - 6);
+                const segment = innerWidth / 2;
+                return { segment, max: segment, width: innerWidth };
+            }
+
+            function renderGlider(x, stretch = 1, animate = false) {
+                const { segment, max } = getSliderMetrics();
+                const scale = Math.max(1, Math.min(1.04, stretch));
+                const correction = (segment * (scale - 1)) / 2;
+                const clamped = Math.max(correction, Math.min(max - correction, x));
+                if (animate) {
+                    isAnimating = true;
+                    glider.style.transition = 'transform .48s cubic-bezier(.16,1,.3,1)';
+                    glider.style.transform = 'translate3d(' + (clamped - correction) + 'px,0,0) scaleX(' + scale + ')';
+                    clearTimeout(renderGlider._t);
+                    renderGlider._t = setTimeout(function () { isAnimating = false; }, 500);
+                } else {
+                    glider.style.transition = 'none';
+                    glider.style.transform = 'translate3d(' + (clamped - correction) + 'px,0,0) scaleX(' + scale + ')';
+                }
+            }
+
+            function snapToOption(index, animate) {
+                if (animate === undefined) animate = true;
+                const targetIndex = Math.max(0, Math.min(1, index));
+                currentIndex = targetIndex;
+                currentModel = models[currentIndex];
+                localStorage.setItem(MODEL_KEY, currentModel);
+
+                try {
+                    const activeId = localStorage.getItem(ACTIVE_KEY);
+                    const chats = loadChats();
+                    const activeChat = chats.find(c => c.id === activeId);
+                    if (activeChat) {
+                        activeChat.model = currentModel;
+                        saveChats(chats);
+                    }
+                } catch (_) {}
+
+                isAnimating = false;
+                const { segment } = getSliderMetrics();
+                renderGlider(currentIndex * segment, 1, animate);
+                options.forEach((opt, i) => opt.classList.toggle('active', i === currentIndex));
+            }
+
+            function modelPointerDown(e) {
+                if (e.pointerType === 'mouse' && e.button !== 0) return;
+                draggingModel = true;
+                isAnimating = false;
+                activePointerId = e.pointerId;
+                dragStartX = e.clientX;
+                const { segment } = getSliderMetrics();
+                dragStartPosition = currentIndex * segment;
+                glider.style.transition = 'none';
+                capsule.classList.add('is-pressed');
+                try { capsule.setPointerCapture(e.pointerId); } catch (_) {}
+                e.preventDefault();
+            }
+
+            function modelPointerMove(e) {
+                if (!draggingModel || e.pointerId !== activePointerId) return;
+                const { segment, max } = getSliderMetrics();
+                const deltaX = e.clientX - dragStartX;
+                const raw = dragStartPosition + deltaX;
+                const x = Math.max(0, Math.min(max, raw));
+                const travel = Math.abs(deltaX);
+                const stretch = 1 + Math.min(.04, travel / Math.max(180, segment * 4));
+                renderGlider(x, stretch, false);
+                e.preventDefault();
+            }
+
+            function finishModelDrag(e) {
+                if (!draggingModel || (e && e.pointerId !== activePointerId)) return;
+                const clientX = e ? e.clientX : dragStartX;
+                const deltaX = clientX - dragStartX;
+                const { segment } = getSliderMetrics();
+                const rect = capsule.getBoundingClientRect();
+                draggingModel = false;
+                activePointerId = null;
+                capsule.classList.remove('is-pressed');
+                try { if (e) capsule.releasePointerCapture(e.pointerId); } catch (_) {}
+                var target;
+                if (Math.abs(deltaX) < 10) {
+                    var localX = clientX - rect.left - 3;
+                    target = Math.max(0, Math.min(1, Math.floor(localX / segment)));
+                } else {
+                    target = Math.max(0, Math.min(1, Math.round((dragStartPosition + deltaX) / segment)));
+                }
+                snapToOption(target, true);
+                if (e) e.preventDefault();
+            }
+
+            capsule.addEventListener('pointerdown', modelPointerDown, { passive: false });
+            capsule.addEventListener('pointermove', modelPointerMove, { passive: false });
+            capsule.addEventListener('pointerup', finishModelDrag, { passive: false });
+            capsule.addEventListener('pointercancel', finishModelDrag, { passive: false });
+            // Model seçeneklerine dokununca doğrudan o modele git
+            options.forEach(function (opt, i) {
+                opt.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (draggingModel) return;
+                    snapToOption(i, true);
+                });
+            });
+
+            // Sohbetler + Ayarlar
+            document.getElementById('btnSettings').addEventListener('click', function () {
+                window.location.href = 'ayarlar.html';
+            });
+            document.getElementById('btnChats').addEventListener('click', function () {
+                if (typeof isGenerating !== 'undefined' && isGenerating) {
+                    try { stopGeneration(); } catch (_) {}
+                }
+                window.location.href = 'sohbetler.html';
+            });
+            /* ---- Düşün tuşu (Lite + Pro) ---- */
+            var THINK_KEY = 'lumea-think-mode';
+            var thinkBtn = document.getElementById('thinkBtn');
+            function isThinkOn() {
+                try {
+                    var v = localStorage.getItem(THINK_KEY);
+                    if (v === null || v === undefined) return true;
+                    return v === '1' || v === 'true';
+                } catch (_) { return true; }
+            }
+            function applyThinkBtn() {
+                if (!thinkBtn) return;
+                var on = isThinkOn();
+                thinkBtn.classList.toggle('active', on);
+                thinkBtn.classList.remove('disabled-model');
+                thinkBtn.style.display = 'flex';
+                thinkBtn.title = currentModel === 'pro'
+                    ? 'Düşün (Pro ajanlı akıl yürütme)'
+                    : 'Düşün (Lite kısa akıl yürütme)';
+            }
+            if (thinkBtn) {
+                // mousedown/touchstart preventDefault: klavye kapanmasın, boş alana dokunulmuş gibi algılanmasın
+                thinkBtn.addEventListener('pointerdown', function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                });
+                thinkBtn.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    var next = !isThinkOn();
+                    localStorage.setItem(THINK_KEY, next ? '1' : '0');
+                    applyThinkBtn();
+                });
+            }
+            applyThinkBtn();
+
+            /* ---- Webde ara tuşu (Lite + Pro) – durum kalıcı (lumea-web-mode) ---- */
+            var webBtn = document.getElementById('webBtn');
+            function isWebOn() {
+                try {
+                    if (window.LumeaWeb) return window.LumeaWeb.isOn();
+                    var v = localStorage.getItem('lumea-web-mode');
+                    return v === '1' || v === 'true';
+                } catch (_) { return false; }
+            }
+            function applyWebBtn() {
+                if (!webBtn) return;
+                var on = isWebOn();
+                webBtn.classList.toggle('active', on);
+                webBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
+                webBtn.title = on
+                    ? 'Webde ara: Açık (Lite ve Pro web sonucuyla birbirini düzeltir)'
+                    : 'Webde ara: Kapalı';
+            }
+            if (webBtn) {
+                webBtn.addEventListener('pointerdown', function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                });
+                webBtn.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    var next = !isWebOn();
+                    try {
+                        if (window.LumeaWeb) window.LumeaWeb.setOn(next);
+                        else localStorage.setItem('lumea-web-mode', next ? '1' : '0');
+                    } catch (_) {}
+                    applyWebBtn();
+                });
+            }
+            applyWebBtn();
+            window.addEventListener('storage', function (e) {
+                if (e.key === 'lumea-web-mode') applyWebBtn();
+            });
+            window.addEventListener('pageshow', applyWebBtn);
+
+            // Model değişince düşün tuşunu güncelle
+            var _origSnap = snapToOption;
+            snapToOption = function (index, animate) {
+                _origSnap(index, animate);
+                applyThinkBtn();
+            };
+
+            function runAiReply(questionText) {
+                setStopMode();
+                typeAbort = false;
+                thinkStartedAt = Date.now();
+                showThinking();
+
+                resolveModelResponse(questionText).then(function (responseText) {
+                    if (typeAbort) return;
+                    var thinkMs = Date.now() - thinkStartedAt;
+                    removeThinking();
+
+                    var writeStartedAt = Date.now();
+                    var aiMsg = document.createElement('div');
+                    aiMsg.className = 'message ai';
+                    chat.appendChild(aiMsg);
+                    scrollToBottom(false);
+
+                    typeResponse(aiMsg, String(responseText || ''), function (finished) {
+                        var writeMs = Date.now() - writeStartedAt;
+                        var meta = document.createElement('div');
+                        meta.className = 'msg-meta';
+                        // Düşün tuşu açıksa ajanların toplam düşünme süresi; kapalıysa "Düşündü" yazılmaz
+                        var parts = [];
+                        if (isThinkOn()) {
+                            parts.push('Düşündü ' + formatSecs(thinkMs));
+                        }
+                        if (finished) {
+                            parts.push('Yanıtladı ' + formatSecs(writeMs));
+                        } else {
+                            parts.push('Durduruldu');
+                        }
+                        meta.textContent = parts.join(' · ');
+                        chat.appendChild(meta);
+                        createMsgActions(aiMsg, questionText);
+                        updateJumpPosition();
+                        // force: kopyala/yenile satırı input altında kalmasın
+                        scrollToBottom(true);
+                        setSendMode();
+                        persistActive(collectMessages(), questionText.slice(0, 40));
+                    });
+                }).catch(function () {
+                    if (typeAbort) return;
+                    var thinkMs = Date.now() - thinkStartedAt;
+                    removeThinking();
+                    var aiMsg = document.createElement('div');
+                    aiMsg.className = 'message ai';
+                    var errTxt = 'Yanıt alınamadı. Lütfen tekrar dene.';
+                    aiMsg.setAttribute('data-raw', errTxt);
+                    aiMsg.textContent = errTxt;
+                    chat.appendChild(aiMsg);
+                    var meta = document.createElement('div');
+                    meta.className = 'msg-meta';
+                    meta.textContent = isThinkOn()
+                        ? ('Düşündü ' + formatSecs(thinkMs) + ' · Hata')
+                        : 'Hata';
+                    chat.appendChild(meta);
+                    createMsgActions(aiMsg, questionText);
+                    updateJumpPosition();
+                    scrollToBottom(true);
+                    setSendMode();
+                    persistActive(collectMessages(), questionText.slice(0, 40));
+                });
+            }
+
+            function retryAiMessage(aiEl, questionText) {
+                var q = String(questionText || '').trim();
+                if (!q || isGenerating) return;
+                removeAiBlock(aiEl);
+                hideGreeting();
+                scrollToBottom(true);
+                persistActive(collectMessages());
+                runAiReply(q);
+            }
+
+
+            function hideGreeting() {
+                if (greeting) greeting.classList.add('hide');
+            }
+
+            function collectMessages() {
+                var out = [];
+                var nodes = chat ? chat.children : [];
+                var i = 0;
+                while (i < nodes.length) {
+                    var el = nodes[i];
+                    if (el.classList && el.classList.contains('message')) {
+                        var role = el.classList.contains('user') ? 'user' : 'ai';
+                        var text = role === 'user'
+                            ? (el.textContent || '')
+                            : (el.getAttribute('data-raw') || el.textContent || '');
+                        var meta = null;
+                        var next = nodes[i + 1];
+                        if (next && next.classList && next.classList.contains('msg-meta')) {
+                            meta = next.textContent || '';
+                            i++;
+                            next = nodes[i + 1];
+                        }
+                        // msg-actions satırını atla
+                        if (next && next.classList && next.classList.contains('msg-actions')) {
+                            i++;
+                        }
+                        out.push({ role: role, text: text, meta: meta });
+                    }
+                    i++;
+                }
+                return out;
+            }
+
+            function removeAiBlock(aiEl) {
+                if (!aiEl || !aiEl.parentNode) return;
+                var n = aiEl.nextElementSibling;
+                while (n && n.classList && (n.classList.contains('msg-meta') || n.classList.contains('msg-actions'))) {
+                    var nx = n.nextElementSibling;
+                    n.remove();
+                    n = nx;
+                }
+                aiEl.remove();
+            }
+
+            function createMsgActions(aiEl, questionText) {
+                if (!aiEl || !aiEl.parentNode) return;
+                // Bu mesajdan hemen sonraki eski actions varsa kaldır
+                var n = aiEl.nextElementSibling;
+                while (n && n.classList && (n.classList.contains('msg-meta') || n.classList.contains('msg-actions'))) {
+                    if (n.classList.contains('msg-actions')) {
+                        var nx = n.nextElementSibling;
+                        n.remove();
+                        n = nx;
+                        break;
+                    }
+                    n = n.nextElementSibling;
+                }
+                var insertAfter = aiEl;
+                var meta = aiEl.nextElementSibling;
+                if (meta && meta.classList && meta.classList.contains('msg-meta')) {
+                    insertAfter = meta;
+                }
+
+                var actions = document.createElement('div');
+                actions.className = 'msg-actions';
+
+                var copyBtn = document.createElement('button');
+                copyBtn.type = 'button';
+                copyBtn.className = 'msg-action-btn';
+                copyBtn.setAttribute('aria-label', 'Kopyala');
+                copyBtn.innerHTML = '<svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
+                copyBtn.addEventListener('click', function () {
+                    var raw = aiEl.getAttribute('data-raw') || aiEl.innerText || '';
+                    // düşünce bloğu işaretlerini temizle
+                    raw = String(raw)
+                        .replace(/%%THINK_START%%[\s\S]*?%%THINK_END%%\s*/g, '')
+                        .replace(/\*\*Nihai Yanıt\*\*\s*/i, '')
+                        .trim();
+                    function ok() {
+                        copyBtn.classList.add('copied');
+                        setTimeout(function () { copyBtn.classList.remove('copied'); }, 1200);
+                    }
+                    if (navigator.clipboard && navigator.clipboard.writeText) {
+                        navigator.clipboard.writeText(raw).then(ok).catch(function () {
+                            try {
+                                var ta = document.createElement('textarea');
+                                ta.value = raw;
+                                document.body.appendChild(ta);
+                                ta.select();
+                                document.execCommand('copy');
+                                ta.remove();
+                                ok();
+                            } catch (_) {}
+                        });
+                    } else {
+                        try {
+                            var ta2 = document.createElement('textarea');
+                            ta2.value = raw;
+                            document.body.appendChild(ta2);
+                            ta2.select();
+                            document.execCommand('copy');
+                            ta2.remove();
+                            ok();
+                        } catch (_) {}
+                    }
+                });
+
+                var retryBtn = document.createElement('button');
+                retryBtn.type = 'button';
+                retryBtn.className = 'msg-action-btn';
+                retryBtn.setAttribute('aria-label', 'Yeniden dene');
+                retryBtn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M1 4v6h6"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>';
+                retryBtn.addEventListener('click', function () {
+                    retryAiMessage(aiEl, questionText);
+                });
+
+                actions.appendChild(copyBtn);
+                actions.appendChild(retryBtn);
+
+                if (insertAfter.nextSibling) {
+                    insertAfter.parentNode.insertBefore(actions, insertAfter.nextSibling);
+                } else {
+                    insertAfter.parentNode.appendChild(actions);
+                }
+            }
+
+            function syncInputCapsule() {
+                if (!userInput || !inputCapsule) return;
+                var val = userInput.value || '';
+                var lines = val.split('\n').length;
+                // Önce tek satır ölçümü için kısıtlamayı kaldır
+                userInput.style.height = '36px';
+                userInput.style.minHeight = '36px';
+                userInput.style.maxHeight = 'none';
+                userInput.style.overflowY = 'hidden';
+                var scrollH = userInput.scrollHeight;
+                // Newline veya satır taşması → büyüt
+                var needsGrow = lines > 1 || (val.length > 0 && scrollH > 40);
+                if (!needsGrow) {
+                    inputCapsule.classList.remove('is-multiline');
+                    userInput.style.height = '36px';
+                    userInput.style.minHeight = '36px';
+                    userInput.style.maxHeight = '36px';
+                    userInput.style.overflowY = 'hidden';
+                    inputCapsule.style.height = '100px';
+                    inputCapsule.style.minHeight = '100px';
+                    inputCapsule.style.maxHeight = '100px';
+                } else {
+                    inputCapsule.classList.add('is-multiline');
+                    inputCapsule.style.height = 'auto';
+                    inputCapsule.style.minHeight = '100px';
+                    inputCapsule.style.maxHeight = '220px';
+                    userInput.style.minHeight = '36px';
+                    userInput.style.maxHeight = '120px';
+                    userInput.style.height = 'auto';
+                    // scrollHeight tekrar ölç (maxHeight 120 ile)
+                    var h = Math.min(120, Math.max(36, userInput.scrollHeight));
+                    userInput.style.height = h + 'px';
+                    userInput.style.overflowY = h >= 118 ? 'auto' : 'hidden';
+                }
+                var hasText = val.trim().length > 0;
+                inputCapsule.classList.toggle('has-text', hasText);
+                if (sendBtn && !sendBtn.classList.contains('is-stop')) {
+                    sendBtn.classList.toggle('has-text', hasText);
+                }
+                updateJumpPosition();
+            }
+
+            function updateJumpPosition() {
+                var btn = document.getElementById('jumpBottom');
+                if (!inputCapsule) return;
+                var h = inputCapsule.offsetHeight || 100;
+                var gap = 6;
+                var safe = 36;
+                try {
+                    var bar = document.querySelector('.input-bar');
+                    if (bar) {
+                        var n = parseFloat(getComputedStyle(bar).paddingBottom);
+                        if (!isNaN(n) && n > 0) safe = Math.min(n, 48);
+                    }
+                } catch (_) {}
+                // input yüksekliği + input-bar alt padding + küçük boşluk
+                var totalBottom = h + safe + gap;
+                if (btn) btn.style.bottom = (totalBottom + 4) + 'px';
+                // kopyala/yenile için sadece küçük ekstra
+                if (chat) chat.style.paddingBottom = (totalBottom + 16) + 'px';
+            }
+
+
+            var autoFollow = true;
+            var internalScroll = false;
+
+            function isNearBottom(threshold) {
+                var t = threshold == null ? 40 : threshold;
+                return (chat.scrollHeight - chat.scrollTop - chat.clientHeight) < t;
+            }
+
+            function scrollToBottom(force) {
+                if (force === true) autoFollow = true;
+
+                if (force === true || (autoFollow && isNearBottom())) {
+                    internalScroll = true;
+                    chat.scrollTop = chat.scrollHeight;
+                    requestAnimationFrame(function () { internalScroll = false; });
+                }
+                updateJumpBtn();
+            }
+
+            var jumpBottomBtn = document.getElementById('jumpBottom');
+            function updateJumpBtn() {
+                if (!jumpBottomBtn) return;
+                var dist = chat.scrollHeight - chat.scrollTop - chat.clientHeight;
+                jumpBottomBtn.classList.toggle('show', dist > 80);
+
+                if (!internalScroll) {
+                    if (dist > 50) autoFollow = false;
+                    else if (dist <= 20) autoFollow = true;
+                }
+            }
+            chat.addEventListener('scroll', updateJumpBtn, { passive: true });
+            if (jumpBottomBtn) {
+                jumpBottomBtn.addEventListener('pointerdown', function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                });
+                jumpBottomBtn.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    autoFollow = true;
+                    chat.scrollTo({ top: chat.scrollHeight, behavior: 'smooth' });
+                    setTimeout(updateJumpBtn, 320);
+                });
+            }
+
+            var isGenerating = false;
+            var typeAbort = false;
+            var typeTimer = null;
+            var activeAiEl = null;
+            var thinkingEl = null;
+            var thinkStartedAt = 0;
+
+            var SEND_ICON = '<svg viewBox="0 0 24 24"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg>';
+            var STOP_ICON = '<svg viewBox="0 0 24 24"><rect x="6.5" y="6.5" width="11" height="11" rx="1.8" fill="#ffffff"/></svg>';
+
+            function setSendMode() {
+                isGenerating = false;
+                sendBtn.classList.remove('is-stop');
+                sendBtn.setAttribute('aria-label', 'Gönder');
+                sendBtn.innerHTML = SEND_ICON;
+                var hasText = userInput && userInput.value.trim().length > 0;
+                sendBtn.classList.toggle('has-text', !!hasText);
+            }
+            function setStopMode() {
+                isGenerating = true;
+                sendBtn.classList.add('is-stop');
+                sendBtn.classList.remove('has-text');
+                sendBtn.setAttribute('aria-label', 'Durdur');
+                sendBtn.innerHTML = STOP_ICON;
+            }
+            function removeThinking() {
+                if (thinkingEl && thinkingEl.parentNode) thinkingEl.remove();
+                thinkingEl = null;
+            }
+            function showThinking() {
+                removeThinking();
+                var wrap = document.createElement('div');
+                wrap.className = 'thinking-wrap';
+                wrap.innerHTML =
+                    '<div class="thinking-wave" role="status" aria-label="Düşünüyor">' +
+                    '<span></span><span></span><span></span>' +
+                    '</div>';
+                chat.appendChild(wrap);
+                thinkingEl = wrap;
+                scrollToBottom(false);
+            }
+            var typeOnDone = null;
+
+            function escapeHtmlMd(str) {
+                return String(str || '')
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;');
+            }
+
+            /**
+             * Basit markdown → HTML (Gemini / Grok tarzı)
+             * Destek: **kalın**, *italik*, • / - listeler, satır sonları, URL
+             */
+            /* Düşünceler: her sayfa yüklemesinde kapalı başlar; oturum içi açılabilir */
+            var thinkCollapsedSession = true;
+            function isThinkCollapsed() {
+                return thinkCollapsedSession;
+            }
+            function setThinkCollapsed(v) {
+                thinkCollapsedSession = !!v;
+            }
+            function applyThinkCollapsedState() {
+                var c = isThinkCollapsed();
+                document.querySelectorAll('.think-block').forEach(function (b) {
+                    b.classList.toggle('collapsed', c);
+                });
+            }
+            // Event delegation — yazım sırasında da çalışır, yeniden bind gerekmez
+            if (!chat._thinkDelegated) {
+                chat._thinkDelegated = true;
+                chat.addEventListener('click', function (e) {
+                    var hdr = e.target.closest && e.target.closest('.think-header');
+                    if (!hdr || !chat.contains(hdr)) return;
+                    e.preventDefault();
+                    e.stopPropagation();
+                    var block = hdr.closest('.think-block');
+                    if (!block) return;
+                    var nowCollapsed = !block.classList.contains('collapsed');
+                    setThinkCollapsed(nowCollapsed);
+                    document.querySelectorAll('.think-block').forEach(function (b) {
+                        b.classList.toggle('collapsed', nowCollapsed);
+                    });
+                });
+            }
+            function bindThinkToggle(root) {
+                // delegation kullandığımız için sadece state senkronu
+                applyThinkCollapsedState();
+            }
+            function formatBodyMarkdown(text) {
+                text = escapeHtmlMd(text);
+                text = text.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+                text = text.replace(/(^|[^*])\*([^*\n]+)\*(?!\*)/g, '$1<em>$2</em>');
+                text = text.replace(
+                    /(https?:\/\/[^\s<]+)/g,
+                    '<a href="$1" target="_blank" rel="noopener">$1</a>'
+                );
+                var lines = text.split('\n');
+                var html = [];
+                var inList = false;
+                function closeList() {
+                    if (inList) { html.push('</ul>'); inList = false; }
+                }
+                for (var i = 0; i < lines.length; i++) {
+                    var trimmed = lines[i].trim();
+                    var listMatch = trimmed.match(/^[•\-\*]\s+(.+)$/);
+                    if (listMatch) {
+                        if (!inList) { html.push('<ul class="md-ul">'); inList = true; }
+                        html.push('<li>' + listMatch[1] + '</li>');
+                        continue;
+                    }
+                    closeList();
+                    if (trimmed === '') continue;
+                    html.push('<p class="md-p">' + trimmed + '</p>');
+                }
+                closeList();
+                return html.join('');
+            }
+
+            /** Yanıtı düşünce + nihai cevap olarak ayır */
+            function splitThinkAndMain(src) {
+                src = String(src || '').replace(/\r\n/g, '\n').trim();
+                var result = { thinkTitle: '', thinkBody: '', mainText: src };
+                if (!src) return result;
+
+                var m = src.match(/%%THINK_START%%([\s\S]*?)%%THINK_END%%\s*([\s\S]*)/);
+                if (m) {
+                    result.thinkTitle = m[1].replace(/\*\*/g, '').trim();
+                    var rest = m[2];
+                    var nihai = rest.search(/\*\*Nihai Yanıt\*\*/i);
+                    if (nihai >= 0) {
+                        result.thinkBody = rest.slice(0, nihai).trim();
+                        result.mainText = rest.slice(nihai).replace(/^\*\*Nihai Yanıt\*\*\s*/i, '').trim();
+                    } else {
+                        var lines = rest.split('\n');
+                        var bodyLines = [], mainLines = [], passed = false;
+                        for (var li = 0; li < lines.length; li++) {
+                            if (!passed && (/^•\s/.test(lines[li].trim()) || lines[li].trim() === '')) {
+                                bodyLines.push(lines[li]);
+                            } else {
+                                passed = true;
+                                mainLines.push(lines[li]);
+                            }
+                        }
+                        result.thinkBody = bodyLines.join('\n').trim();
+                        result.mainText = mainLines.join('\n').trim();
+                    }
+                    return result;
+                }
+
+                if (/Düşünce Sürecim/i.test(src)) {
+                    var idx = src.search(/\*\*Düşünce Sürecim[^*]*\*\*/i);
+                    if (idx >= 0) {
+                        var after = src.slice(idx);
+                        var titleMatch = after.match(/\*\*(Düşünce Sürecim[^*]*)\*\*/i);
+                        result.thinkTitle = titleMatch ? titleMatch[1] : 'Düşünceler';
+                        var nihai2 = after.search(/\*\*Nihai Yanıt\*\*/i);
+                        if (nihai2 >= 0) {
+                            result.thinkBody = after.slice(0, nihai2).replace(/\*\*Düşünce Sürecim[^*]*\*\*/i, '').trim();
+                            result.mainText = after.slice(nihai2).replace(/^\*\*Nihai Yanıt\*\*\s*/i, '').trim();
+                        }
+                    }
+                }
+                return result;
+            }
+
+            function buildThinkHtml(title, body) {
+                if (!title) return '';
+                var collapsed = isThinkCollapsed();
+                return '<div class="think-block' + (collapsed ? ' collapsed' : '') + '">' +
+                    '<div class="think-header">' +
+                    '<span class="think-header-title">' + escapeHtmlMd(title) + '</span>' +
+                    '<svg class="think-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>' +
+                    '</div>' +
+                    '<div class="think-body">' + formatBodyMarkdown(body || '') + '</div>' +
+                    '</div>';
+            }
+
+            function formatAiMarkdown(raw) {
+                // Eski yanıtlardaki web dipnotları / çapraz kontrol metinlerini gizle
+                var cleaned = String(raw || '')
+                    .replace(/\n*_Web['’]de ilgili sonuç[^\n]*_?\s*/gi, '')
+                    .replace(/\n*• \*\*Lite Denetçi:\*\*[^\n]*/g, '')
+                    .replace(/\n*• \*\*Pro Denetçi:\*\*[^\n]*/g, '')
+                    .replace(/\n*• \*\*Birleştirici:\*\*[^\n]*/g, '')
+                    .replace(/\n*• \*\*Web Ajanı:\*\*[^\n]*modeller birbirini[^\n]*/gi, '');
+                var parts = splitThinkAndMain(cleaned);
+                var out = '';
+                if (parts.thinkTitle) out += buildThinkHtml(parts.thinkTitle, parts.thinkBody);
+                out += formatBodyMarkdown(parts.mainText);
+                return out || escapeHtmlMd(cleaned);
+            }
+
+            function stopGeneration() {
+                typeAbort = true;
+                if (typeTimer) { clearTimeout(typeTimer); typeTimer = null; }
+                removeThinking();
+                if (activeAiEl) {
+                    activeAiEl.classList.remove('typing');
+                    // data-raw yazım sırasında kısmi tutulur; tam metinle üzerine yazma
+                    var raw = (activeAiEl.getAttribute('data-raw') || '').trim();
+                    if (!raw) {
+                        activeAiEl.remove();
+                        activeAiEl = null;
+                        typeOnDone = null;
+                        setSendMode();
+                        persistActive(collectMessages());
+                        return;
+                    }
+                    activeAiEl.innerHTML = formatAiMarkdown(raw);
+                    bindThinkToggle(activeAiEl);
+                    var done = typeOnDone;
+                    typeOnDone = null;
+                    activeAiEl = null;
+                    if (typeof done === 'function') done(false);
+                    else {
+                        setSendMode();
+                        persistActive(collectMessages());
+                    }
+                    return;
+                }
+                typeOnDone = null;
+                setSendMode();
+                persistActive(collectMessages());
+            }
+
+            /**
+             * Yazım sırasında titremeyi önler:
+             * - Düşünce bloğu bir kez kurulur (header + body)
+             * - Sadece ana yanıt alanı karakter karakter güncellenir
+             * - Kapalıyken body zaten CSS ile gizli; yeniden çizim yok
+             */
+            function typeResponse(el, fullText, onDone) {
+                typeAbort = false;
+                activeAiEl = el;
+                typeOnDone = onDone;
+                var src = String(fullText || '');
+                // Başta boş tut — durdurulunca tam yanıt basılmasın
+                el.setAttribute('data-raw', '');
+                el.classList.add('typing');
+
+                var parts = splitThinkAndMain(src);
+                var mainSrc = parts.mainText || src;
+                var hasThink = !!parts.thinkTitle;
+
+                // Düşünce bloğunu bir kez sabitle
+                var shell = '';
+                if (hasThink) {
+                    shell = buildThinkHtml(parts.thinkTitle, parts.thinkBody);
+                }
+                shell += '<div class="ai-main-stream"></div>';
+                el.innerHTML = shell;
+                var streamEl = el.querySelector('.ai-main-stream');
+                if (!streamEl) {
+                    el.innerHTML = '';
+                    streamEl = el;
+                }
+                bindThinkToggle(el);
+
+                var i = 0;
+                var len = mainSrc.length;
+                var baseDelay = len > 400 ? 6 : len > 180 ? 10 : len > 80 ? 14 : 18;
+
+                function tick() {
+                    if (typeAbort) {
+                        el.classList.remove('typing');
+                        // Kısmi ana metin + tam düşünce
+                        var partialMain = mainSrc.slice(0, i);
+                        var partialRaw;
+                        if (hasThink) {
+                            partialRaw = '%%THINK_START%%**' + parts.thinkTitle + '**%%THINK_END%%\n' +
+                                (parts.thinkBody || '') + '\n\n**Nihai Yanıt**\n' + partialMain;
+                        } else {
+                            partialRaw = partialMain;
+                        }
+                        el.setAttribute('data-raw', partialRaw);
+                        if (streamEl) streamEl.innerHTML = formatBodyMarkdown(partialMain);
+                        bindThinkToggle(el);
+                        activeAiEl = null;
+                        typeOnDone = null;
+                        if (onDone) onDone(false);
+                        return;
+                    }
+                    var chunk = 1 + (Math.random() > 0.65 ? 1 : 0) + (Math.random() > 0.88 ? 1 : 0);
+                    var next = Math.min(len, i + chunk);
+                    while (next < len && (mainSrc[next - 1] === '*' || mainSrc[next] === '*')) {
+                        next++;
+                        if (next - i > 12) break;
+                    }
+                    i = next;
+                    var partial = mainSrc.slice(0, i);
+                    // Kısmi data-raw — durdurulunca tam metin basılmasın
+                    var partialRawLive;
+                    if (hasThink) {
+                        partialRawLive = '%%THINK_START%%**' + parts.thinkTitle + '**%%THINK_END%%\n' +
+                            (parts.thinkBody || '') + '\n\n**Nihai Yanıt**\n' + partial;
+                    } else {
+                        partialRawLive = partial;
+                    }
+                    el.setAttribute('data-raw', partialRawLive);
+                    // Sadece ana yanıt DOM'unu güncelle — think-block dokunulmaz → titreme yok
+                    if (streamEl) {
+                        // Eksik ** kapat
+                        var t = partial;
+                        var stars = (t.match(/\*\*/g) || []).length;
+                        if (stars % 2 === 1) t += '**';
+                        streamEl.innerHTML = formatBodyMarkdown(t);
+                    }
+                    scrollToBottom(false);
+                    if (i < len) {
+                        var pause = baseDelay;
+                        var ch = mainSrc[i - 1];
+                        if (ch === '.' || ch === '!' || ch === '?') pause += 50;
+                        else if (ch === ',' || ch === ';' || ch === ':') pause += 22;
+                        else if (ch === '\n') pause += 30;
+                        typeTimer = setTimeout(tick, pause + Math.random() * 6);
+                    } else {
+                        el.classList.remove('typing');
+                        el.setAttribute('data-raw', src);
+                        el.innerHTML = formatAiMarkdown(src);
+                        bindThinkToggle(el);
+                        activeAiEl = null;
+                        typeTimer = null;
+                        typeOnDone = null;
+                        if (onDone) onDone(true);
+                    }
+                }
+                typeTimer = setTimeout(tick, 20);
+            }
+
+            function resolveModelResponse(text) {
+                if (currentModel === 'lite' && typeof getLiteResponse === 'function')
+                    return Promise.resolve(getLiteResponse(text));
+                if (currentModel === 'pro' && typeof getProResponse === 'function')
+                    return Promise.resolve(getProResponse(text));
+                return Promise.resolve('Model yanıtı alınamadı. Lütfen tekrar dene.');
+            }
+            function formatSecs(ms) {
+                var s = ms / 1000;
+                if (s < 10) return s.toFixed(1).replace('.', ',') + ' sn';
+                return Math.round(s) + ' sn';
+            }
+
+            function sendMessage() {
+                if (isGenerating) {
+                    stopGeneration();
+                    return;
+                }
+                const text = userInput.value.trim();
+                if (!text) return;
+                hideGreeting();
+                const userMsg = document.createElement('div');
+                userMsg.className = 'message user';
+                userMsg.textContent = text;
+                chat.appendChild(userMsg);
+                userInput.value = '';
+                syncInputCapsule();
+                scrollToBottom(true);
+                persistActive(collectMessages(), text.slice(0, 40));
+                runAiReply(text);
+            }
+
+            sendBtn.addEventListener('click', sendMessage);
+            userInput.addEventListener('input', function () {
+                syncInputCapsule();
+            });
+            function forceCapsuleSize() {
+                if (!inputCapsule) return;
+                if (inputCapsule.classList.contains('is-multiline')) return;
+                inputCapsule.style.height = '100px';
+                inputCapsule.style.minHeight = '100px';
+                inputCapsule.style.maxHeight = '100px';
+                if (userInput) {
+                    userInput.style.height = '36px';
+                    userInput.style.minHeight = '36px';
+                    userInput.style.maxHeight = '36px';
+                }
+            }
+            userInput.addEventListener('focus', function () {
+                if (!(userInput.value || '').includes('\n')) {
+                    inputCapsule.classList.remove('is-multiline');
+                }
+                forceCapsuleSize();
+                var sx = window.scrollX || 0, sy = window.scrollY || 0;
+                requestAnimationFrame(function () {
+                    window.scrollTo(sx, sy);
+                    forceCapsuleSize();
+                    syncInputCapsule();
+                    updateJumpPosition();
+                });
+                setTimeout(function () {
+                    window.scrollTo(sx, sy);
+                    forceCapsuleSize();
+                    syncInputCapsule();
+                    updateJumpPosition();
+                }, 80);
+                setTimeout(function () {
+                    forceCapsuleSize();
+                    updateJumpPosition();
+                }, 320);
+            });
+            userInput.addEventListener('blur', function () {
+                requestAnimationFrame(function () {
+                    forceCapsuleSize();
+                    syncInputCapsule();
+                    updateJumpPosition();
+                });
+            });
+            // Enter = alt satır (mobil klavye dahil). Gönder: Ctrl/Cmd+Enter veya gönder tuşu.
+            userInput.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+                    e.preventDefault();
+                    if (isGenerating) return;
+                    sendMessage();
+                }
+                // Düz Enter veya Shift+Enter: varsayılan davranış (yeni satır)
+            });
+
+            let resizeTimer;
+            window.addEventListener('resize', () => {
+                clearTimeout(resizeTimer);
+                resizeTimer = setTimeout(() => {
+                    const { segment } = getSliderMetrics();
+                    renderGlider(currentIndex * segment, 1, false);
+                    syncInputCapsule();
+                }, 80);
+            });
+
+            if (window.visualViewport) {
+                const inputBarEl = document.querySelector('.input-bar');
+                const updateViewport = () => {
+                    const vv = window.visualViewport;
+                    const vh = vv.height;
+                    document.documentElement.style.setProperty('--vvh', vh + 'px');
+                    var kb = window.innerHeight - vh > 80;
+                    document.body.classList.toggle('keyboard-open', kb);
+                    // Klavye açıkken input-bar'ı visualViewport altına sabitle — boyut değişmesin
+                    if (inputBarEl) {
+                        if (kb) {
+                            var offset = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
+                            inputBarEl.style.bottom = offset + 'px';
+                        } else {
+                            inputBarEl.style.bottom = '0px';
+                        }
+                    }
+                    updateJumpBtn();
+                    updateJumpPosition();
+                    // Kapsül yüksekliğini zorla koru
+                    if (inputCapsule && !inputCapsule.classList.contains('is-multiline')) {
+                        inputCapsule.style.height = '100px';
+                        inputCapsule.style.minHeight = '100px';
+                        inputCapsule.style.maxHeight = '100px';
+                    }
+                };
+                window.visualViewport.addEventListener('resize', updateViewport);
+                window.visualViewport.addEventListener('scroll', updateViewport);
+                updateViewport();
+            }
+
+            // İlk yüklemede ok pozisyonunu ayarla
+            requestAnimationFrame(updateJumpPosition);
+
+            // Tema ayarlardan yönetildiği için sadece kaydedilmiş değeri uygula
+const savedTheme = localStorage.getItem(THEME_KEY) === 'dark';
+if (savedTheme) {
+  document.documentElement.setAttribute('data-theme', 'dark');
+  document.body.setAttribute('data-theme', 'dark');
+} else {
+  document.documentElement.removeAttribute('data-theme');
+  document.body.removeAttribute('data-theme');
+}
+
+            // Sohbet balonu rengi (sohbetbalonrenk.html ile aynı anahtar)
+            (function applyBubbleColor() {
+                var c = localStorage.getItem('lumea-bubble-color') || '#007aff';
+                if (!/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(c)) c = '#007aff';
+                document.documentElement.style.setProperty('--user-bubble', c);
+            })();
+
+            // Karşılama metni (kisisellestirme.html ile aynı anahtarlar)
+            (function applyGreeting() {
+                var show = localStorage.getItem('lumea-show-greeting') !== 'false';
+                var text = (localStorage.getItem('lumea-greeting-text') || 'Merhaba').trim() || 'Merhaba';
+                var el = document.getElementById('greetingText');
+                if (el) el.textContent = text;
+                if (!show && greeting) greeting.classList.add('hide');
+            })();
+
+            var active = getActiveChat();
+            if (active && active.messages && active.messages.length) {
+                hideGreeting();
+                var savedIndex = models.indexOf(localStorage.getItem(MODEL_KEY));
+                snapToOption(savedIndex >= 0 ? savedIndex : 0, false);
+                var msgs = active.messages;
+                var idx = 0;
+                var CHUNK = 25;
+                function paintChunk() {
+                    var frag = document.createDocumentFragment();
+                    var end = Math.min(idx + CHUNK, msgs.length);
+                    for (; idx < end; idx++) {
+                        var m = msgs[idx];
+                        var el = document.createElement('div');
+                        el.className = 'message ' + (m.role === 'user' ? 'user' : 'ai');
+                        if (m.role === 'ai' || m.role === 'assistant') {
+                            el.setAttribute('data-raw', m.text || '');
+                            el.innerHTML = formatAiMarkdown(m.text || '');
+                            bindThinkToggle(el);
+                        } else {
+                            el.textContent = m.text || '';
+                        }
+                        frag.appendChild(el);
+                        if (m.meta) {
+                            var metaEl = document.createElement('div');
+                            metaEl.className = 'msg-meta';
+                            metaEl.textContent = m.meta;
+                            frag.appendChild(metaEl);
+                        }
+                    }
+                    chat.appendChild(frag);
+                    if (idx < msgs.length) {
+                        requestAnimationFrame(paintChunk);
+                    } else {
+                        var lastUserQ = '';
+                        chat.querySelectorAll('.message').forEach(function (el) {
+                            if (el.classList.contains('user')) {
+                                lastUserQ = el.textContent || '';
+                            } else if (el.classList.contains('ai') && lastUserQ) {
+                                createMsgActions(el, lastUserQ);
+                            }
+                        });
+                        chat.scrollTop = chat.scrollHeight;
+                        updateJumpBtn();
+                        updateJumpPosition();
+                    }
+                }
+                requestAnimationFrame(paintChunk);
+            } else {
+                var savedIndex = models.indexOf(localStorage.getItem(MODEL_KEY));
+                snapToOption(savedIndex >= 0 ? savedIndex : 0, false);
+                updateJumpPosition();
+            }
+        })();
+    </script>
+</body>
+</html>

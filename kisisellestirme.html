@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Kişiselleştirilebilir Zeka · Lumea</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --bg: #f4f5f8;
+      --text: #1c1c1e;
+      --card-bg: rgba(255, 255, 255, 0.85);
+      --border: rgba(0, 0, 0, 0.06);
+      --muted: #8e8e93;
+      --active-bg: rgba(0, 0, 0, 0.04);
+      --back-btn-bg: #ffffff;
+      --accent: #007aff;
+      --input-bg: rgba(0, 0, 0, 0.03);
+      --danger: #ff3b30;
+      --modal-overlay: rgba(0, 0, 0, 0.4);
+    }
+
+    [data-theme="dark"] {
+      --bg: #0d0d10;
+      --text: #f2f2f7;
+      --card-bg: rgba(28, 28, 34, 0.75);
+      --border: rgba(255, 255, 255, 0.07);
+      --muted: #8e8e93;
+      --active-bg: rgba(255, 255, 255, 0.06);
+      --back-btn-bg: #2c2c32;
+      --accent: #0a84ff;
+      --input-bg: rgba(255, 255, 255, 0.05);
+      --danger: #ff453a;
+      --modal-overlay: rgba(0, 0, 0, 0.65);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", system-ui, Roboto, sans-serif;
+      -webkit-tap-highlight-color: transparent !important;
+      outline: none !important;
+      user-select: none;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      background-color: var(--bg);
+      color: var(--text);
+      overflow: hidden;
+    }
+
+    .page {
+      max-width: 480px;
+      margin: 0 auto;
+      height: 100%;
+      max-height: 100%;
+      display: flex;
+      flex-direction: column;
+      padding: 0;
+      overflow: hidden;
+      box-sizing: border-box;
+    }
+
+    .top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 16px 18px 10px;
+      flex-shrink: 0;
+      background: var(--bg);
+      position: relative;
+      z-index: 5;
+    }
+
+    .scroll-body {
+      flex: 1 1 0;
+      min-height: 0;
+      overflow-y: auto;
+      overflow-x: hidden;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+      padding: 4px 18px max(20px, env(safe-area-inset-bottom));
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .model-card-group {
+      flex-shrink: 0;
+    }
+
+    .title {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      color: var(--text);
+    }
+
+    .back-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--back-btn-bg);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      text-decoration: none;
+      transition: transform 0.18s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+
+    .back-btn:active { transform: scale(0.92); }
+
+    .back-btn svg {
+      width: 18px;
+      height: 18px;
+      stroke: var(--text);
+      fill: none;
+      stroke-width: 2.2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .section-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-left: 8px;
+      margin-top: 6px;
+    }
+
+    .card {
+      background: var(--card-bg);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    /* Model Kartları */
+    .model-card-group {
+      background: var(--card-bg);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      overflow: hidden;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+    }
+
+    .model-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      transition: background-color 0.18s ease;
+    }
+
+    .model-item:last-child {
+      border-bottom: none;
+    }
+
+    .model-item:active {
+      background-color: var(--active-bg);
+    }
+
+    .item-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .item-icon {
+      font-size: 18px;
+      color: var(--text);
+      width: 24px;
+      text-align: center;
+      opacity: 0.85;
+    }
+
+    .item-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .item-title-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .item-title {
+      font-size: 16px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      color: var(--text);
+    }
+
+    .item-desc {
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 400;
+    }
+
+    .check-icon {
+      font-size: 16px;
+      color: var(--accent);
+      opacity: 0;
+      transform: scale(0.6);
+      transition: opacity 0.2s ease, transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .model-item.selected .check-icon {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    .row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .label-text {
+      font-size: 15px;
+      font-weight: 500;
+    }
+
+    /* Switch Style */
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 48px;
+      height: 28px;
+    }
+
+    .switch input { opacity: 0; width: 0; height: 0; }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      inset: 0;
+      background-color: var(--muted);
+      opacity: 0.4;
+      transition: .25s ease;
+      border-radius: 28px;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 22px;
+      width: 22px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: .25s ease;
+      border-radius: 50%;
+    }
+
+    input:checked + .slider {
+      background-color: var(--accent);
+      opacity: 1;
+    }
+
+    input:checked + .slider:before {
+      transform: translateX(20px);
+    }
+
+    .input-box {
+      width: 100%;
+      background: var(--input-bg);
+      border: 1px solid var(--border);
+      padding: 12px 14px;
+      border-radius: 14px;
+      color: var(--text);
+      font-size: 14px;
+      user-select: text !important;
+    }
+
+    textarea.input-box {
+      resize: vertical;
+      min-height: 70px;
+    }
+
+    .btn-blue {
+      width: 100%;
+      background: var(--accent);
+      color: #ffffff;
+      border: none;
+      padding: 14px;
+      border-radius: 16px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: transform 0.15s ease, opacity 0.15s ease;
+    }
+
+    .btn-blue:active {
+      transform: scale(0.97);
+      opacity: 0.9;
+    }
+
+    /* Yanıt Liste Alanı */
+    .response-list-container {
+      max-height: 320px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding-right: 2px;
+    }
+
+    .response-list-container::-webkit-scrollbar {
+      width: 4px;
+    }
+    .response-list-container::-webkit-scrollbar-thumb {
+      background: var(--muted);
+      border-radius: 4px;
+    }
+
+    .response-item {
+      background: var(--input-bg);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      position: relative;
+    }
+
+    .response-item-q {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--accent);
+      word-break: break-word;
+      user-select: text !important;
+    }
+
+    .response-item-a {
+      font-size: 13px;
+      color: var(--text);
+      opacity: 0.9;
+      word-break: break-word;
+      user-select: text !important;
+    }
+
+    .response-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 4px;
+    }
+
+    .action-btn {
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      font-size: 13px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 8px;
+      border-radius: 8px;
+    }
+
+    .action-btn:hover {
+      background: var(--active-bg);
+    }
+
+    .action-btn.delete {
+      color: var(--danger);
+    }
+
+    .empty-state {
+      text-align: center;
+      font-size: 13px;
+      color: var(--muted);
+      padding: 10px 0;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    /* Özel Modal Pencere Stilleri */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: var(--modal-overlay);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 9999;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      backdrop-filter: blur(28px);
+      -webkit-backdrop-filter: blur(28px);
+      border-radius: 24px;
+      width: 100%;
+      max-width: 320px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      text-align: center;
+      transform: scale(0.9);
+      transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    }
+
+    .modal-overlay.active .modal-card {
+      transform: scale(1);
+    }
+
+    .modal-title {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .modal-message {
+      font-size: 14px;
+      color: var(--text);
+      opacity: 0.85;
+      line-height: 1.4;
+    }
+
+    .modal-buttons {
+      display: flex;
+      gap: 10px;
+      margin-top: 6px;
+    }
+
+    .modal-btn {
+      flex: 1;
+      padding: 12px;
+      border-radius: 14px;
+      border: none;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.12s ease;
+    }
+
+    .modal-btn:active { transform: scale(0.96); }
+
+    .modal-btn-cancel {
+      background: var(--input-bg);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .modal-btn-confirm {
+      background: var(--accent);
+      color: #ffffff;
+    }
+
+    .modal-btn-danger {
+      background: var(--danger);
+      color: #ffffff;
+    }
+
+    /* Toast Bildirimi */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(40px);
+      background: var(--text);
+      color: var(--bg);
+      padding: 10px 18px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 500;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      z-index: 1000;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page">
+    <div class="top">
+      <div class="title">Kişiselleştirilebilir Zeka</div>
+      <a href="ayarlar.html" class="back-btn" aria-label="Geri">
+        <svg viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg>
+      </a>
+    </div>
+
+    <div class="scroll-body">
+    <!-- Model Seçimi -->
+    <div class="section-title">Model</div>
+    <div class="model-card-group">
+      
+      <!-- Lite 1.2 -->
+      <div class="model-item" data-model="lite">
+        <div class="item-left">
+          <i class="fa-solid fa-bolt item-icon"></i>
+          <div class="item-info">
+            <div class="item-title-row">
+              <span class="item-title">Lui Lite 1.0</span>
+            </div>
+            <span class="item-desc">Hızlı yanıtlar ve temel bilgi aramaları için ideal.</span>
+          </div>
+        </div>
+        <i class="fa-solid fa-check check-icon"></i>
+      </div>
+
+      <!-- Pro 1.1 -->
+      <div class="model-item" data-model="pro">
+        <div class="item-left">
+          <i class="fa-solid fa-brain item-icon"></i>
+          <div class="item-info">
+            <div class="item-title-row">
+              <span class="item-title">Lui Pro 1.0</span>
+            </div>
+            <span class="item-desc">Daha derin analiz ve detaylı mantık yürütme.</span>
+          </div>
+        </div>
+        <i class="fa-solid fa-check check-icon"></i>
+      </div>
+
+    </div>
+
+    <!-- Karşılama Yazısı Ayarları -->
+    <div class="section-title">Ana Ekran Karşılama Metni</div>
+    <div class="card">
+      <div class="row">
+        <span class="label-text">Karşılama Yazısını Göster</span>
+        <label class="switch">
+          <input type="checkbox" id="toggleGreeting">
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <div id="greetingTextContainer">
+        <input type="text" id="greetingInput" class="input-box" placeholder="Örn: Merhaba">
+      </div>
+    </div>
+
+    <!-- Özel Yanıtlar Kısmı -->
+    <div class="section-title">Özel Yanıt Ekle</div>
+    <div class="card">
+      <div class="form-group">
+        <input type="text" id="customQuestionInput" class="input-box" placeholder="Kullanıcı Sorusu (Örn: Saatin kaç?)">
+        <textarea id="customAnswerInput" class="input-box" placeholder="Verilecek Yanıt (Örn: Şu an saat...)"></textarea>
+        <button class="btn-blue" id="btnAddResponse">
+          <i class="fa-solid fa-plus" id="addIcon"></i>
+          <span id="addBtnText">Yanıt Kaydet</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Eklenen Yanıtlar Listesi -->
+    <div class="section-title">Eklenen Yanıtlar</div>
+    <div class="card">
+      <div class="response-list-container" id="responseList">
+        <!-- Dinamik Liste -->
+      </div>
+    </div>
+    </div>
+  </div>
+
+  <!-- Özel Modal Pencere HTML -->
+  <div class="modal-overlay" id="customModal">
+    <div class="modal-card">
+      <div class="modal-title" id="modalTitle">Bilgi</div>
+      <div class="modal-message" id="modalMessage">Mesaj buraya gelecek.</div>
+      <div class="modal-buttons">
+        <button class="modal-btn modal-btn-cancel" id="modalCancelBtn">İptal</button>
+        <button class="modal-btn modal-btn-confirm" id="modalConfirmBtn">Tamam</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Bildirimi -->
+  <div class="toast" id="toast">Model güncellendi</div>
+
+  <script>
+    if (localStorage.getItem('lumea-theme') === 'dark') {
+      document.body.setAttribute('data-theme', 'dark');
+    }
+
+    // Model Seçimi Kontrolleri
+    const MODEL_KEY = 'lumea-selected-model';
+    const modelItems = document.querySelectorAll('.model-item');
+    const toast = document.getElementById('toast');
+
+    let currentModel = localStorage.getItem(MODEL_KEY);
+    if (!['lite', 'pro', 'proplus'].includes(currentModel)) currentModel = 'lite';
+
+    function updateModelSelection(model) {
+      if (!['lite', 'pro', 'proplus'].includes(model)) model = 'lite';
+      currentModel = model;
+      localStorage.setItem(MODEL_KEY, model);
+
+      try {
+        const activeId = localStorage.getItem('lumea-active-chat');
+        const chats = JSON.parse(localStorage.getItem('lumea-chats') || '[]');
+        const activeChat = chats.find(c => c.id === activeId);
+        if (activeChat) {
+          activeChat.model = model;
+          localStorage.setItem('lumea-chats', JSON.stringify(chats));
+        }
+      } catch (_) {}
+
+      modelItems.forEach(item => {
+        if (item.dataset.model === model) {
+          item.classList.add('selected');
+        } else {
+          item.classList.remove('selected');
+        }
+      });
+    }
+
+    function showToast(msg) {
+      toast.textContent = msg;
+      toast.classList.add('show');
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 2000);
+    }
+
+    updateModelSelection(currentModel);
+
+    // Index ve Kişiselleştirilebilir Zeka aynı localStorage anahtarını kullanır.
+    // Başka bir sayfada model değişirse bu ekran da seçim işaretini günceller.
+    window.addEventListener('storage', (e) => {
+      if (e.key === MODEL_KEY && ['lite', 'pro', 'proplus'].includes(e.newValue)) {
+        updateModelSelection(e.newValue);
+      }
+    });
+
+    modelItems.forEach(item => {
+      item.addEventListener('click', () => {
+        const selectedModel = item.dataset.model;
+        if (selectedModel !== currentModel) {
+          updateModelSelection(selectedModel);
+          const modelName = item.querySelector('.item-title').textContent;
+          showToast(`${modelName} seçildi`);
+        }
+      });
+    });
+
+    // Karşılama Metni ve Özel Yanıt Kontrolleri
+    const toggleGreeting = document.getElementById('toggleGreeting');
+    const greetingInput = document.getElementById('greetingInput');
+    const greetingContainer = document.getElementById('greetingTextContainer');
+
+    const customQuestionInput = document.getElementById('customQuestionInput');
+    const customAnswerInput = document.getElementById('customAnswerInput');
+    const btnAddResponse = document.getElementById('btnAddResponse');
+    const responseList = document.getElementById('responseList');
+    const addBtnText = document.getElementById('addBtnText');
+    const addIcon = document.getElementById('addIcon');
+
+    // Custom Modal Kontrolleri
+    const customModal = document.getElementById('customModal');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalMessage = document.getElementById('modalMessage');
+    const modalCancelBtn = document.getElementById('modalCancelBtn');
+    const modalConfirmBtn = document.getElementById('modalConfirmBtn');
+
+    let editIndex = null;
+    let modalCallback = null;
+
+    function showAlert(title, message) {
+      modalTitle.textContent = title;
+      modalMessage.textContent = message;
+      modalCancelBtn.style.display = 'none';
+      modalConfirmBtn.className = 'modal-btn modal-btn-confirm';
+      modalConfirmBtn.textContent = 'Tamam';
+      modalCallback = null;
+      customModal.classList.add('active');
+    }
+
+    function showConfirm(title, message, isDanger, onConfirm) {
+      modalTitle.textContent = title;
+      modalMessage.textContent = message;
+      modalCancelBtn.style.display = 'block';
+      modalConfirmBtn.className = isDanger ? 'modal-btn modal-btn-danger' : 'modal-btn modal-btn-confirm';
+      modalConfirmBtn.textContent = 'Sil';
+      modalCallback = onConfirm;
+      customModal.classList.add('active');
+    }
+
+    modalCancelBtn.addEventListener('click', () => {
+      customModal.classList.remove('active');
+    });
+
+    modalConfirmBtn.addEventListener('click', () => {
+      customModal.classList.remove('active');
+      if (modalCallback) modalCallback();
+    });
+
+    // Kayıtlı Verileri Yükle
+    const showGreeting = localStorage.getItem('lumea-show-greeting') !== 'false';
+    const savedGreetingText = localStorage.getItem('lumea-greeting-text') || 'Merhaba';
+
+    toggleGreeting.checked = showGreeting;
+    greetingInput.value = savedGreetingText;
+    greetingContainer.style.display = showGreeting ? 'block' : 'none';
+
+    toggleGreeting.addEventListener('change', (e) => {
+      const isChecked = e.target.checked;
+      localStorage.setItem('lumea-show-greeting', isChecked);
+      greetingContainer.style.display = isChecked ? 'block' : 'none';
+    });
+
+    greetingInput.addEventListener('input', (e) => {
+      localStorage.setItem('lumea-greeting-text', e.target.value.trim() || 'Merhaba');
+    });
+
+    // Özel Yanıtlar Veri Yönetimi
+    function getCustomResponses() {
+      try {
+        return JSON.parse(localStorage.getItem('lumea-custom-responses') || '[]');
+      } catch (_) {
+        return [];
+      }
+    }
+
+    function saveCustomResponses(responses) {
+      localStorage.setItem('lumea-custom-responses', JSON.stringify(responses));
+    }
+
+    function renderResponseList() {
+      const responses = getCustomResponses();
+      responseList.innerHTML = '';
+
+      if (responses.length === 0) {
+        responseList.innerHTML = '<div class="empty-state">Henüz eklenmiş özel bir yanıt yok.</div>';
+        return;
+      }
+
+      responses.forEach((item, index) => {
+        const itemEl = document.createElement('div');
+        itemEl.className = 'response-item';
+        itemEl.innerHTML = `
+          <div class="response-item-q"><i class="fa-regular fa-circle-question"></i> ${escapeHtml(item.question)}</div>
+          <div class="response-item-a"><i class="fa-regular fa-comment-dots"></i> ${escapeHtml(item.answer)}</div>
+          <div class="response-actions">
+            <button class="action-btn" onclick="editResponse(${index})"><i class="fa-solid fa-pen"></i> Düzenle</button>
+            <button class="action-btn delete" onclick="deleteResponse(${index})"><i class="fa-solid fa-trash"></i> Sil</button>
+          </div>
+        `;
+        responseList.appendChild(itemEl);
+      });
+    }
+
+    function escapeHtml(str) {
+      return str.replace(/[&<>"']/g, function(m) {
+        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m];
+      });
+    }
+
+    btnAddResponse.addEventListener('click', () => {
+      const q = customQuestionInput.value.trim();
+      const a = customAnswerInput.value.trim();
+
+      if (!q || !a) {
+        showAlert('Eksik Bilgi', 'Lütfen hem soruyu hem de verilecek yanıtı doldurun.');
+        return;
+      }
+
+      const responses = getCustomResponses();
+
+      if (editIndex !== null) {
+        responses[editIndex] = { question: q, answer: a };
+        editIndex = null;
+        addBtnText.textContent = 'Yanıt Kaydet';
+        addIcon.className = 'fa-solid fa-plus';
+      } else {
+        responses.push({ question: q, answer: a });
+      }
+
+      saveCustomResponses(responses);
+      customQuestionInput.value = '';
+      customAnswerInput.value = '';
+      renderResponseList();
+    });
+
+    window.editResponse = function(index) {
+      const responses = getCustomResponses();
+      const item = responses[index];
+      if (!item) return;
+
+      customQuestionInput.value = item.question;
+      customAnswerInput.value = item.answer;
+      editIndex = index;
+
+      addBtnText.textContent = 'Güncelle';
+      addIcon.className = 'fa-solid fa-check';
+      customQuestionInput.focus();
+    };
+
+    window.deleteResponse = function(index) {
+      showConfirm('Silme Onayı', 'Bu özel yanıtı silmek istediğinize emin misiniz?', true, () => {
+        const responses = getCustomResponses();
+        responses.splice(index, 1);
+        saveCustomResponses(responses);
+
+        if (editIndex === index) {
+          editIndex = null;
+          customQuestionInput.value = '';
+          customAnswerInput.value = '';
+          addBtnText.textContent = 'Yanıt Kaydet';
+          addIcon.className = 'fa-solid fa-plus';
+        }
+
+        renderResponseList();
+      });
+    };
+
+    renderResponseList();
+  </script>
+</body>
+</html>

@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Soru Balonu Rengi · Lumea</title>
+  <style>
+    :root {
+      --bg: #f4f5f8;
+      --text: #1c1c1e;
+      --card-bg: rgba(255, 255, 255, 0.85);
+      --border: rgba(0, 0, 0, 0.06);
+      --muted: #8e8e93;
+      --active-bg: rgba(0, 0, 0, 0.04);
+      --back-btn-bg: #ffffff;
+      --accent: #007aff;
+      --toggle-off: #e9e9ea;
+    }
+    [data-theme="dark"] {
+      --bg: #0d0d10;
+      --text: #f2f2f7;
+      --card-bg: rgba(28, 28, 34, 0.75);
+      --border: rgba(255, 255, 255, 0.07);
+      --muted: #8e8e93;
+      --active-bg: rgba(255, 255, 255, 0.06);
+      --back-btn-bg: #2c2c32;
+      --accent: #0a84ff;
+      --toggle-off: #39393d;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", system-ui, Roboto, sans-serif;
+      -webkit-tap-highlight-color: transparent !important;
+      -webkit-touch-callout: none !important;
+      -webkit-user-select: none;
+      user-select: none;
+      outline: none !important;
+    }
+    html, body {
+      width: 100%;
+      height: 100%;
+      background-color: var(--bg);
+      color: var(--text);
+      overflow: hidden;
+    }
+    .page {
+      max-width: 480px;
+      margin: 0 auto;
+      height: 100%;
+      max-height: 100%;
+      display: flex;
+      flex-direction: column;
+      padding: 0;
+      overflow: hidden;
+      box-sizing: border-box;
+    }
+    .top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 16px 18px 10px;
+      flex-shrink: 0;
+      background: var(--bg);
+      position: relative;
+      z-index: 5;
+    }
+    .scroll-body {
+      flex: 1 1 0;
+      min-height: 0;
+      overflow-y: auto;
+      overflow-x: hidden;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+      padding: 4px 18px max(28px, env(safe-area-inset-bottom));
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+    .title {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      color: var(--text);
+    }
+    .back-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--back-btn-bg);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      text-decoration: none;
+      transition: transform 0.18s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+    .back-btn:active { transform: scale(0.92); }
+    .back-btn svg {
+      width: 18px;
+      height: 18px;
+      stroke: var(--text);
+      fill: none;
+      stroke-width: 2.2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .section-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin: 2px 0 0 6px;
+    }
+    .card {
+      background: var(--card-bg);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border-radius: 22px;
+      border: 1px solid var(--border);
+      overflow: hidden;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+      padding: 18px;
+    }
+    .preview-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 4px;
+    }
+    .preview-label {
+      font-size: 13px;
+      color: var(--muted);
+      font-weight: 500;
+    }
+    .preview-bubble {
+      align-self: flex-end;
+      max-width: 78%;
+      padding: 12px 16px;
+      border-radius: 20px;
+      border-bottom-right-radius: 4px;
+      background: var(--preview-color, #007aff);
+      color: #ffffff;
+      font-size: 15px;
+      line-height: 1.4;
+      font-weight: 500;
+    }
+    .colors-title {
+      font-size: 15px;
+      font-weight: 600;
+      margin: 8px 0 14px;
+      letter-spacing: -0.01em;
+    }
+    .color-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      justify-content: flex-start;
+    }
+    .color-swatch {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      border: none;
+      cursor: pointer;
+      position: relative;
+      flex-shrink: 0;
+      transition: transform 0.18s cubic-bezier(0.2, 0.8, 0.2, 1);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+    }
+    .color-swatch:active { transform: scale(0.9); }
+    .color-swatch.selected::after {
+      content: '';
+      position: absolute;
+      inset: -4px;
+      border-radius: 50%;
+      border: 2.5px solid var(--accent);
+      pointer-events: none;
+    }
+    .row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .row-left { display: flex; align-items: center; gap: 14px; min-width: 0; flex: 1; }
+    .row-icon { width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .row-icon svg { width: 20px; height: 20px; stroke: var(--text); fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; opacity: 0.9; }
+    .row-texts { display: flex; flex-direction: column; gap: 2px; }
+    .row-title { font-size: 15px; font-weight: 600; letter-spacing: -0.01em; }
+    .row-desc { font-size: 12px; color: var(--muted); }
+    .card.row-card { padding: 15px 18px; }
+    .switch { position: relative; display: inline-block; width: 48px; height: 28px; flex-shrink: 0; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider {
+      position: absolute; cursor: pointer; inset: 0;
+      background-color: var(--toggle-off);
+      transition: 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+      border-radius: 28px;
+    }
+    .slider:before {
+      position: absolute; content: ""; height: 22px; width: 22px; left: 3px; bottom: 3px;
+      background-color: #fff;
+      transition: 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+      border-radius: 50%;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
+    }
+    input:checked + .slider { background-color: var(--accent); }
+    input:checked + .slider:before { transform: translateX(20px); }
+    .toast {
+      position: fixed;
+      bottom: 28px;
+      left: 50%;
+      transform: translateX(-50%) translateY(40px);
+      background: var(--text);
+      color: var(--bg);
+      padding: 10px 18px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 500;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.28s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      z-index: 1000;
+      max-width: 90vw;
+      text-align: center;
+    }
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="top">
+      <div class="title">Kişiselleştirilebilir Renkler</div>
+      <a href="ayarlar.html" class="back-btn" aria-label="Geri">
+        <svg viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg>
+      </a>
+    </div>
+
+    <div class="scroll-body">
+          <div class="section-label">Görünüm</div>
+
+    <div class="card row-card">
+      <div class="row">
+        <div class="row-left">
+          <div class="row-icon">
+            <svg id="themeIcon" viewBox="0 0 24 24"></svg>
+          </div>
+          <div class="row-texts">
+            <span class="row-title">Karanlık Mod</span>
+            <span class="row-desc" id="themeSubtext">Kapalı</span>
+          </div>
+        </div>
+        <label class="switch" aria-label="Karanlık mod">
+          <input type="checkbox" id="themeToggle">
+          <span class="slider"></span>
+        </label>
+      </div>
+    </div>
+
+    <div class="section-label">Soru Balonu Rengi</div>
+    <div class="card">
+      <div class="preview-wrap">
+        <div class="preview-label">Önizleme</div>
+        <div class="preview-bubble" id="previewBubble">Merhaba, bu bir soru balonu</div>
+      </div>
+
+      <div class="colors-title">Renk seç</div>
+      <div class="color-grid" id="colorGrid"></div>
+    </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast">Renk kaydedildi</div>
+
+  <script>
+    (function () {
+      var THEME_KEY = 'lumea-theme';
+      var SUN_SVG = '<circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22"/><line x1="2" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="22" y2="12"/><line x1="4.9" y1="4.9" x2="6.3" y2="6.3"/><line x1="17.7" y1="17.7" x2="19.1" y2="19.1"/><line x1="4.9" y1="19.1" x2="6.3" y2="17.7"/><line x1="17.7" y1="6.3" x2="19.1" y2="4.9"/>';
+      var MOON_SVG = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>';
+      var themeToggle = document.getElementById('themeToggle');
+      var themeSubtext = document.getElementById('themeSubtext');
+      var themeIcon = document.getElementById('themeIcon');
+
+      function applyTheme(isDark) {
+        if (isDark) document.body.setAttribute('data-theme', 'dark');
+        else document.body.removeAttribute('data-theme');
+        themeToggle.checked = isDark;
+        themeSubtext.textContent = isDark ? 'Açık' : 'Kapalı';
+        themeIcon.innerHTML = isDark ? MOON_SVG : SUN_SVG;
+        try { localStorage.setItem(THEME_KEY, isDark ? 'dark' : 'light'); } catch (e) {}
+      }
+      applyTheme(localStorage.getItem(THEME_KEY) === 'dark');
+      themeToggle.addEventListener('change', function () { applyTheme(themeToggle.checked); });
+
+      var COLOR_KEY = 'lumea-bubble-color';
+      var COLORS = [
+        '#007aff',
+        '#0a84ff',
+        '#5ac8fa',
+        '#30d158',
+        '#34c759',
+        '#ff9f0a',
+        '#ff9500',
+        '#ff3b30',
+        '#ff453a',
+        '#af52de',
+        '#bf5af2',
+        '#ff2d55',
+        '#5856d6',
+        '#64d2ff',
+        '#1c1c1e',
+        '#636366'
+      ];
+
+      var current = localStorage.getItem(COLOR_KEY) || '#007aff';
+      if (!/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(current)) current = '#007aff';
+
+      var grid = document.getElementById('colorGrid');
+      var preview = document.getElementById('previewBubble');
+      var toast = document.getElementById('toast');
+
+      function applyPreview(c) {
+        preview.style.background = c;
+        document.documentElement.style.setProperty('--preview-color', c);
+      }
+
+      function showToast(msg) {
+        toast.textContent = msg;
+        toast.classList.add('show');
+        setTimeout(function () { toast.classList.remove('show'); }, 1800);
+      }
+
+      function selectColor(c, save) {
+        current = c;
+        applyPreview(c);
+        Array.prototype.forEach.call(grid.querySelectorAll('.color-swatch'), function (el) {
+          el.classList.toggle('selected', el.dataset.color === c);
+        });
+        if (save) {
+          localStorage.setItem(COLOR_KEY, c);
+          showToast('Soru balonu rengi kaydedildi');
+        }
+      }
+
+      COLORS.forEach(function (c) {
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'color-swatch';
+        btn.dataset.color = c;
+        btn.style.background = c;
+        btn.setAttribute('aria-label', c);
+        if (c.toLowerCase() === current.toLowerCase()) btn.classList.add('selected');
+        btn.addEventListener('click', function () {
+          selectColor(c, true);
+        });
+        grid.appendChild(btn);
+      });
+
+      applyPreview(current);
+    })();
+  </script>
+</body>
+</html>

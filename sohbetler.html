@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Sohbetler · Lumea</title>
+    <style>
+        :root {
+            --bg: #f2f3f7;
+            --text: #1c1c1e;
+            --muted: #8e8e93;
+            --card: #ffffff;
+            --sheet: #ffffff;
+        }
+        [data-theme="dark"] {
+            --bg: #0d0d10;
+            --text: #f2f2f7;
+            --muted: #8e8e93;
+            --card: #1c1c22;
+            --sheet: #1c1c22;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; user-select: none; }
+        html, body {
+            width: 100%; height: 100%;
+            background: var(--bg);
+            color: var(--text);
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+            overflow: hidden;
+        }
+        .page {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            padding: 12px 16px max(16px, env(safe-area-inset-bottom));
+        }
+        .top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 14px;
+        }
+        .title { font-size: 22px; font-weight: 700; letter-spacing: -0.03em; }
+        .back {
+            width: 40px; height: 40px;
+            border-radius: 20px;
+            background: #ffffff;
+            border: none;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; flex-shrink: 0;
+        }
+        [data-theme="dark"] .back { background: #2c2c32; }
+        .back svg {
+            width: 18px; height: 18px;
+            stroke: #1c1c1e; fill: none;
+            stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round;
+        }
+        [data-theme="dark"] .back svg { stroke: #f2f2f7; }
+        .search-wrap {
+            width: 100%;
+            margin-bottom: 12px;
+            flex-shrink: 0;
+        }
+        .search-capsule {
+            width: 100%;
+            height: 44px;
+            border-radius: 22px;
+            background: var(--card);
+            border: 1px solid rgba(0,0,0,0.06);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 0 14px;
+        }
+        [data-theme="dark"] .search-capsule {
+            border-color: rgba(255,255,255,0.08);
+        }
+        .search-capsule svg {
+            width: 18px; height: 18px;
+            stroke: var(--muted); fill: none;
+            stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+            flex-shrink: 0;
+        }
+        .search-capsule input {
+            flex: 1;
+            min-width: 0;
+            height: 100%;
+            border: none;
+            outline: none;
+            background: transparent;
+            color: var(--text);
+            font-size: 15px;
+            font-weight: 500;
+            -webkit-user-select: text;
+            user-select: text;
+        }
+        .search-capsule input::placeholder {
+            color: var(--muted);
+            font-weight: 400;
+        }
+        .search-clear {
+            width: 22px; height: 22px;
+            border-radius: 11px;
+            border: none;
+            background: rgba(142,142,147,0.25);
+            color: var(--text);
+            font-size: 14px;
+            line-height: 1;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            padding: 0;
+        }
+        .search-clear.show { display: flex; }
+        .new-btn {
+            width: 100%; height: 48px; border: none; border-radius: 24px;
+            background: #007aff; color: #fff; font-size: 16px; font-weight: 600;
+            cursor: pointer; margin-bottom: 14px;
+            flex-shrink: 0;
+        }
+        .new-btn:active { transform: scale(0.98); }
+        .list {
+            flex: 1; overflow-y: auto;
+            display: flex; flex-direction: column; gap: 10px;
+            -webkit-overflow-scrolling: touch; scrollbar-width: none;
+            min-height: 0;
+        }
+        .list::-webkit-scrollbar { display: none; }
+        .chat-pill {
+            background: var(--card);
+            border-radius: 20px;
+            padding: 14px 16px;
+            cursor: pointer;
+            min-height: 68px;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            width: 100%;
+            max-width: 100%;
+            overflow: hidden;
+            box-sizing: border-box;
+        }
+        .chat-pill:active { opacity: 0.78; }
+        .chat-pill.is-active {
+            background: rgba(0, 122, 255, 0.12);
+            box-shadow: inset 0 0 0 1.5px rgba(0, 122, 255, 0.45);
+        }
+        .chat-pill.is-active .chat-title { color: #007aff; }
+        .chat-pill.is-active .chat-sub { color: rgba(0, 122, 255, 0.75); }
+        .chat-pill.is-active .chat-time { color: rgba(0, 122, 255, 0.65); }
+        [data-theme="dark"] .chat-pill.is-active {
+            background: rgba(10, 132, 255, 0.18);
+            box-shadow: inset 0 0 0 1.5px rgba(10, 132, 255, 0.55);
+        }
+        [data-theme="dark"] .chat-pill.is-active .chat-title { color: #0a84ff; }
+        [data-theme="dark"] .chat-pill.is-active .chat-sub { color: rgba(10, 132, 255, 0.8); }
+        [data-theme="dark"] .chat-pill.is-active .chat-time { color: rgba(10, 132, 255, 0.7); }
+        .chat-body {
+            flex: 1;
+            min-width: 0;
+            max-width: 100%;
+            overflow: hidden;
+        }
+        .chat-title {
+            font-size: 16px; font-weight: 600; margin-bottom: 3px;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            max-width: 100%;
+        }
+        .chat-sub {
+            font-size: 13px; color: var(--muted);
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            margin-bottom: 4px;
+            max-width: 100%;
+        }
+        .chat-time {
+            font-size: 11px; color: var(--muted); opacity: 0.9;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            max-width: 100%;
+        }
+        .pin-mark {
+            width: 16px; height: 16px; flex-shrink: 0; margin-top: 3px;
+            stroke: #007aff; fill: none; stroke-width: 2;
+            stroke-linecap: round; stroke-linejoin: round;
+        }
+        .empty { text-align: center; color: var(--muted); font-size: 14px; padding: 40px 12px; }
+
+        .overlay {
+            position: fixed; inset: 0; z-index: 80;
+            background: rgba(0,0,0,0);
+            pointer-events: none;
+            transition: background .28s ease;
+        }
+        .overlay.open {
+            background: rgba(0,0,0,0.42);
+            pointer-events: auto;
+        }
+        .sheet {
+            position: absolute; left: 10px; right: 10px; bottom: 10px;
+            background: var(--sheet);
+            border-radius: 22px;
+            padding: 6px 8px max(14px, env(safe-area-inset-bottom));
+            transform: translateY(120%);
+            transition: transform .32s cubic-bezier(.32,.72,0,1);
+            touch-action: none;
+        }
+        .overlay.open .sheet { transform: translateY(0); }
+        .handle {
+            width: 36px; height: 5px; border-radius: 3px;
+            background: rgba(128,128,128,.35);
+            margin: 6px auto 8px;
+        }
+        .sheet-title {
+            text-align: center; font-size: 13px; color: var(--muted);
+            font-weight: 600; padding: 0 12px 6px;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .action {
+            display: flex; align-items: center; gap: 14px;
+            padding: 14px 14px; border-radius: 16px;
+            font-size: 16px; font-weight: 550; cursor: pointer;
+            color: var(--text);
+        }
+        .action:active { background: rgba(128,128,128,.12); }
+        .action svg {
+            width: 22px; height: 22px; flex-shrink: 0;
+            stroke: currentColor; fill: none; stroke-width: 1.9;
+            stroke-linecap: round; stroke-linejoin: round;
+        }
+        .action.danger { color: #ff3b30; }
+        .rename-box { display: none; padding: 4px 10px 10px; }
+        .rename-box.show { display: block; }
+        .rename-box input {
+            width: 100%; height: 44px; border: none; border-radius: 14px;
+            background: var(--bg); color: var(--text);
+            padding: 0 14px; font-size: 16px; outline: none;
+        }
+        .rename-ok {
+            margin-top: 8px; width: 100%; height: 42px; border: none;
+            border-radius: 14px; background: #007aff; color: #fff;
+            font-size: 15px; font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <div class="top">
+            <div class="title">Sohbetler</div>
+            <button class="back" id="btnBack" aria-label="Geri">
+                <svg viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg>
+            </button>
+        </div>
+        <div class="search-wrap">
+            <div class="search-capsule">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+<input type="text" id="searchInput" placeholder="Sohbet ara…" autocomplete="off" enterkeyhint="search">                <button type="button" class="search-clear" id="searchClear" aria-label="Temizle">×</button>
+            </div>
+        </div>
+        <button class="new-btn" id="btnNew">Yeni sohbet</button>
+        <div class="list" id="list"></div>
+    </div>
+
+    <div class="overlay" id="overlay">
+        <div class="sheet" id="sheet">
+            <div class="handle"></div>
+            <div class="sheet-title" id="sheetTitle">Sohbet</div>
+            <div class="action" id="actPin">
+                <svg viewBox="0 0 24 24"><path d="M9 4h6"/><path d="M10 4v6l-3 3h10l-3-3V4"/><path d="M12 13v7"/></svg>
+                <span id="pinLabel">Sabitle</span>
+            </div>
+            <div class="action" id="actRename">
+                <svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                <span>Yeniden adlandır</span>
+            </div>
+            <div class="action danger" id="actDelete">
+                <svg viewBox="0 0 24 24"><path d="M4 7h16"/><path d="M9 7V5a1 1 0 011-1h4a1 1 0 011 1v2"/><path d="M6 7l1 13h10l1-13"/><path d="M10 11v6M14 11v6"/></svg>
+                <span>Sil</span>
+            </div>
+            <div class="rename-box" id="renameBox">
+                <input id="renameInput" maxlength="48" placeholder="Sohbet adı">
+                <button class="rename-ok" id="renameOk">Kaydet</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function () {
+            const KEY = 'lumea-chats';
+            const ACTIVE = 'lumea-active-chat';
+            if (localStorage.getItem('lumea-theme') === 'dark') {
+                document.body.setAttribute('data-theme', 'dark');
+            }
+
+            function loadChats() {
+                try { return JSON.parse(localStorage.getItem(KEY) || '[]'); }
+                catch (_) { return []; }
+            }
+            function saveChats(chats) { localStorage.setItem(KEY, JSON.stringify(chats)); }
+            function uid() { return 'c' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
+
+            function formatWhen(ts) {
+                if (!ts) return '';
+                const d = new Date(ts);
+                const months = ['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'];
+                const dd = d.getDate();
+                const mon = months[d.getMonth()];
+                const yy = d.getFullYear();
+                const hh = String(d.getHours()).padStart(2,'0');
+                const mm = String(d.getMinutes()).padStart(2,'0');
+                return dd + ' ' + mon + ' ' + yy + ' · ' + hh + ':' + mm;
+            }
+
+            const overlay = document.getElementById('overlay');
+            const sheet = document.getElementById('sheet');
+            const sheetTitle = document.getElementById('sheetTitle');
+            const pinLabel = document.getElementById('pinLabel');
+            const renameBox = document.getElementById('renameBox');
+            const renameInput = document.getElementById('renameInput');
+            let activeId = null;
+            let suppressClick = false;
+
+            function closeSheet() {
+                overlay.classList.remove('open');
+                renameBox.classList.remove('show');
+                activeId = null;
+            }
+            function openSheet(chat) {
+                activeId = chat.id;
+                sheetTitle.textContent = chat.title || 'Sohbet';
+                pinLabel.textContent = chat.pinned ? 'Sabitten çıkar' : 'Sabitle';
+                renameBox.classList.remove('show');
+                overlay.classList.add('open');
+            }
+
+            let searchQuery = '';
+
+            function render() {
+                const q = (searchQuery || '').trim().toLowerCase();
+                let chats = loadChats().sort((a, b) => {
+                    if (!!b.pinned !== !!a.pinned) return a.pinned ? -1 : 1;
+                    return (b.updated || 0) - (a.updated || 0);
+                });
+                if (q) {
+                    chats = chats.filter(function (c) {
+                        const title = String(c.title || 'Yeni sohbet').toLowerCase();
+                        return title.indexOf(q) !== -1;
+                    });
+                }
+                const list = document.getElementById('list');
+                list.innerHTML = '';
+                if (!loadChats().length) {
+                    list.innerHTML = '<div class="empty">Henüz sohbet yok</div>';
+                    return;
+                }
+                if (!chats.length) {
+                    list.innerHTML = '<div class="empty">Aramayla eşleşen sohbet yok</div>';
+                    return;
+                }
+                const activeChatId = localStorage.getItem(ACTIVE);
+
+                function previewText(raw) {
+                    var t = String(raw || '').replace(/\r\n/g, '\n').trim();
+                    if (!t) return 'Boş sohbet';
+                    // Düşünce bloğu: %%THINK_START%% ... %%THINK_END%% + ajan satırları + **Nihai Yanıt**
+                    var m = t.match(/%%THINK_START%%[\s\S]*?%%THINK_END%%\s*([\s\S]*)/);
+                    if (m) {
+                        var rest = m[1];
+                        var nihai = rest.search(/\*\*Nihai Yanıt\*\*/i);
+                        if (nihai >= 0) {
+                            t = rest.slice(nihai).replace(/^\*\*Nihai Yanıt\*\*\s*/i, '').trim();
+                        } else {
+                            var lines = rest.split('\n');
+                            var main = [];
+                            var passed = false;
+                            for (var i = 0; i < lines.length; i++) {
+                                var line = lines[i];
+                                var trim = line.trim();
+                                if (!passed) {
+                                    if (/^•\s/.test(trim) || trim === '' || /^\*\*[^*]+\*\*\s*:/.test(trim)) continue;
+                                    passed = true;
+                                }
+                                if (passed) main.push(line);
+                            }
+                            t = main.join('\n').trim() || rest.trim();
+                        }
+                    } else if (/\*\*Nihai Yanıt\*\*/i.test(t)) {
+                        t = t.replace(/^[\s\S]*?\*\*Nihai Yanıt\*\*\s*/i, '').trim();
+                    }
+                    t = t.replace(/\*\*([^*]+)\*\*/g, '$1').replace(/\n+/g, ' ').replace(/\s+/g, ' ').trim();
+                    if (t.length > 120) t = t.slice(0, 117) + '…';
+                    return t || 'Boş sohbet';
+                }
+
+                chats.forEach(chat => {
+                    const lastMsg = (chat.messages && chat.messages.length)
+                        ? chat.messages[chat.messages.length - 1]
+                        : null;
+                    const last = lastMsg ? previewText(lastMsg.text) : 'Boş sohbet';
+                    const when = formatWhen(chat.created || chat.updated);
+                    const el = document.createElement('div');
+                    el.className = 'chat-pill' + (chat.id === activeChatId ? ' is-active' : '');
+                    el.innerHTML =
+                        (chat.pinned ? '<svg class="pin-mark" viewBox="0 0 24 24"><path d="M9 4h6"/><path d="M10 4v6l-3 3h10l-3-3V4"/><path d="M12 13v7"/></svg>' : '') +
+                        '<div class="chat-body"><div class="chat-title"></div><div class="chat-sub"></div><div class="chat-time"></div></div>';
+                    el.querySelector('.chat-title').textContent = chat.title || 'Yeni sohbet';
+                    el.querySelector('.chat-sub').textContent = last;
+                    el.querySelector('.chat-time').textContent = when;
+
+                    el.addEventListener('click', (e) => {
+                        if (suppressClick) { e.preventDefault(); e.stopPropagation(); return; }
+                        localStorage.setItem(ACTIVE, chat.id);
+                        location.href = 'index.html';
+                    });
+
+                    let timer = null, sx = 0, sy = 0, holding = false;
+                    const cancelHold = () => { if (timer) { clearTimeout(timer); timer = null; } };
+                    el.addEventListener('pointerdown', (e) => {
+                        holding = false;
+                        sx = e.clientX; sy = e.clientY;
+                        timer = setTimeout(() => {
+                            holding = true;
+                            suppressClick = true;
+                            openSheet(chat);
+                            try { navigator.vibrate && navigator.vibrate(12); } catch (_) {}
+                        }, 420);
+                    });
+                    el.addEventListener('pointermove', (e) => {
+                        if (Math.hypot(e.clientX - sx, e.clientY - sy) > 12) cancelHold();
+                    });
+                    el.addEventListener('pointerup', () => {
+                        cancelHold();
+                        setTimeout(() => { suppressClick = holding; holding = false; }, 50);
+                    });
+                    el.addEventListener('pointercancel', () => { cancelHold(); holding = false; });
+                    el.addEventListener('contextmenu', (e) => { e.preventDefault(); openSheet(chat); });
+
+                    list.appendChild(el);
+                });
+            }
+
+            document.getElementById('btnBack').addEventListener('click', () => { location.href = 'index.html'; });
+
+            const searchInput = document.getElementById('searchInput');
+            const searchClear = document.getElementById('searchClear');
+            function syncSearchClear() {
+                searchClear.classList.toggle('show', searchInput.value.length > 0);
+            }
+            searchInput.addEventListener('input', function () {
+                searchQuery = searchInput.value;
+                syncSearchClear();
+                render();
+            });
+            searchClear.addEventListener('click', function () {
+                searchInput.value = '';
+                searchQuery = '';
+                syncSearchClear();
+                render();
+                searchInput.focus();
+            });
+
+            document.getElementById('btnNew').addEventListener('click', () => {
+                const now = Date.now();
+                const chats = loadChats();
+                const chat = { id: uid(), title: 'Yeni sohbet', model: 'lite', messages: [], updated: now, created: now, pinned: false };
+                chats.push(chat); saveChats(chats);
+                localStorage.setItem(ACTIVE, chat.id);
+                location.href = 'index.html';
+            });
+
+            document.getElementById('actDelete').addEventListener('click', () => {
+                if (!activeId) return;
+                saveChats(loadChats().filter(c => c.id !== activeId));
+                if (localStorage.getItem(ACTIVE) === activeId) localStorage.removeItem(ACTIVE);
+                closeSheet(); render();
+            });
+            document.getElementById('actPin').addEventListener('click', () => {
+                if (!activeId) return;
+                const chats = loadChats();
+                const chat = chats.find(c => c.id === activeId);
+                if (chat) { chat.pinned = !chat.pinned; saveChats(chats); }
+                closeSheet(); render();
+            });
+            document.getElementById('actRename').addEventListener('click', () => {
+                const chats = loadChats();
+                const chat = chats.find(c => c.id === activeId);
+                renameInput.value = (chat && chat.title) || '';
+                renameBox.classList.add('show');
+                renameInput.focus();
+            });
+            document.getElementById('renameOk').addEventListener('click', () => {
+                const name = renameInput.value.trim();
+                if (!name || !activeId) return;
+                const chats = loadChats();
+                const chat = chats.find(c => c.id === activeId);
+                if (chat) { chat.title = name; saveChats(chats); }
+                closeSheet(); render();
+            });
+
+            overlay.addEventListener('pointerdown', (e) => { if (e.target === overlay) closeSheet(); });
+
+            let drag = false, startY = 0;
+            sheet.addEventListener('pointerdown', (e) => {
+                if (e.target.closest('.action') || e.target.closest('input') || e.target.closest('.rename-ok')) return;
+                drag = true; startY = e.clientY;
+                sheet.style.transition = 'none';
+                try { sheet.setPointerCapture(e.pointerId); } catch (_) {}
+            });
+            sheet.addEventListener('pointermove', (e) => {
+                if (!drag) return;
+                const dy = Math.max(0, e.clientY - startY);
+                sheet.style.transform = 'translateY(' + dy + 'px)';
+            });
+            const endDrag = (e) => {
+                if (!drag) return;
+                const dy = Math.max(0, e.clientY - startY);
+                drag = false;
+                sheet.style.transition = '';
+                sheet.style.transform = '';
+                if (dy > 70) closeSheet();
+            };
+            sheet.addEventListener('pointerup', endDrag);
+            sheet.addEventListener('pointercancel', endDrag);
+
+            render();
+        })();
+    </script>
+</body>
+</html>

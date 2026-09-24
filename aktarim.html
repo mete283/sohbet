@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Lui veri aktarımı · Lumea</title>
+  <style>
+    :root{--bg:#f4f5f8;--text:#1c1c1e;--card-bg:rgba(255,255,255,.85);--border:rgba(0,0,0,.06);--muted:#8e8e93;--active-bg:rgba(0,0,0,.04);--back-btn-bg:#fff;--accent:#007aff;--danger:#ff3b30;--danger-bg:rgba(255,59,48,.1);--modal-bg:rgba(255,255,255,.94)}
+    [data-theme="dark"]{--bg:#0d0d10;--text:#f2f2f7;--card-bg:rgba(28,28,34,.75);--border:rgba(255,255,255,.07);--active-bg:rgba(255,255,255,.06);--back-btn-bg:#2c2c32;--accent:#0a84ff;--danger:#ff453a;--danger-bg:rgba(255,69,58,.16);--modal-bg:rgba(28,28,34,.96)}
+    *{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,Roboto,sans-serif;-webkit-tap-highlight-color:transparent!important;-webkit-touch-callout:none!important;-webkit-user-select:none;user-select:none;outline:none!important}
+    html,body{width:100%;height:100%;background:var(--bg);color:var(--text);overflow-x:hidden}
+    svg{pointer-events:none;flex-shrink:0}
+    .page{max-width:480px;margin:0 auto;padding:16px 18px max(28px,env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:18px}
+    .top{display:flex;align-items:center;justify-content:space-between;gap:12px;position:sticky;top:0;z-index:20;margin:-16px 0 2px;padding:16px 0 10px;background:var(--bg)}
+    .title{font-size:24px;font-weight:700;letter-spacing:-.03em}
+    .back-btn{width:40px;height:40px;border-radius:50%;background:var(--back-btn-bg);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform .18s}
+    .back-btn:active{transform:scale(.92)}
+    .back-btn svg{width:18px;height:18px;stroke:var(--text);fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+    .card{background:var(--card-bg);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-radius:22px;border:1px solid var(--border);overflow:hidden}
+    .row{display:flex;align-items:center;justify-content:space-between;padding:15px 18px;border:none;border-bottom:1px solid var(--border);width:100%;background:transparent;color:var(--text);cursor:pointer;text-align:left;transition:background-color .15s}
+    .row:last-child{border-bottom:none}
+    .row:active{background:var(--active-bg)}
+    .row-static,.row-static:active{cursor:default;background:transparent}
+    .row-left{display:flex;align-items:center;gap:14px;flex:1;min-width:0}
+    .row-icon{width:22px;height:22px;display:flex;align-items:center;justify-content:center}
+    .row-icon svg{width:20px;height:20px;stroke:var(--text);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+    .row-texts{display:flex;flex-direction:column;gap:2px}
+    .row-title{font-size:15px;font-weight:600}
+    .row-desc{font-size:12px;color:var(--muted);line-height:1.3}
+    .note{font-size:12px;color:var(--muted);line-height:1.5;padding:0 6px}
+    .switch{position:relative;display:inline-block;width:48px;height:28px;flex-shrink:0;margin-left:10px}
+    .switch input{opacity:0;width:0;height:0}
+    .slider{position:absolute;cursor:pointer;inset:0;background:#e9e9ea;transition:.25s;border-radius:28px}
+    [data-theme="dark"] .slider{background:#39393d}
+    .slider:before{position:absolute;content:"";height:22px;width:22px;left:3px;bottom:3px;background:#fff;transition:.25s;border-radius:50%;box-shadow:0 1px 4px rgba(0,0,0,.18)}
+    input:checked+.slider{background:var(--accent)}
+    input:checked+.slider:before{transform:translateX(20px)}
+    textarea.box{width:100%;height:150px;border-radius:14px;border:1px solid var(--border);background:var(--active-bg);color:var(--text);font-size:11px;padding:10px;resize:none;-webkit-user-select:text;user-select:text;margin-bottom:14px;font-family:monospace}
+    .sec-label{font-size:12px;color:var(--muted);opacity:.7;margin:0 0 -8px 6px;font-weight:500}
+    .code-head{padding:14px 18px 6px}
+    .code-box{padding:0 18px 14px}
+    textarea.code{width:100%;height:56px;border-radius:12px;border:1px solid var(--border);background:var(--active-bg);color:var(--text);font-size:10px;padding:8px;resize:none;-webkit-user-select:text;user-select:text;font-family:monospace;word-break:break-all}
+    .code-actions{display:flex;align-items:center;justify-content:space-between;margin-top:8px;gap:10px}
+    .code-size{font-size:11px;color:var(--muted)}
+    .mini-btn{height:34px;padding:0 16px;border-radius:12px;border:none;background:var(--accent);color:#fff;font-size:13px;font-weight:600;cursor:pointer}
+    .mini-btn:active{transform:scale(.96)}
+    .toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(40px);background:var(--text);color:var(--bg);padding:10px 18px;border-radius:20px;font-size:13px;font-weight:500;opacity:0;pointer-events:none;transition:all .28s;z-index:1000;max-width:90vw;text-align:center}
+    .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.42);backdrop-filter:blur(8px);z-index:999;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .22s}
+    .modal-overlay.active{opacity:1;pointer-events:auto}
+    .modal{width:min(320px,90vw);background:var(--modal-bg);border-radius:26px;padding:22px 20px 18px;text-align:center;border:1px solid var(--border)}
+    .modal-title{font-size:17px;font-weight:650;margin-bottom:6px}
+    .modal-desc{font-size:13px;color:var(--muted);line-height:1.45;margin-bottom:18px}
+    .modal-actions{display:flex;gap:10px}
+    .modal-btn{flex:1;height:42px;border-radius:14px;border:none;font-size:14px;font-weight:600;cursor:pointer}
+    .modal-btn:active{transform:scale(.96)}
+    .btn-cancel{background:var(--active-bg);color:var(--text)}
+    .btn-ok{background:var(--accent);color:#fff}
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="top">
+      <div class="title">Lui veri aktarımı</div>
+      <div class="back-btn" id="btnBack" role="button" aria-label="Geri"><svg viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg></div>
+    </div>
+
+    <div class="card">
+      <div class="row row-static">
+        <div class="row-left">
+          <div class="row-texts">
+            <span class="row-title">Mevcut verinin üzerine yaz</span>
+            <span class="row-desc" id="owDesc">Kapalı: mevcut sohbetler korunur ve silinmez</span>
+          </div>
+        </div>
+        <label class="switch"><input type="checkbox" id="owToggle"><span class="slider"></span></label>
+      </div>
+    </div>
+
+    <div class="sec-label">Veri kodları</div>
+
+    <div class="card">
+      <div class="code-head"><div class="row-title">Ayarlar veri kodu</div><div class="row-desc">Sadece ayar değişiklikleri. Her değişiklikte kendini günceller.</div></div>
+      <div class="code-box">
+        <textarea class="code" id="code_settings" readonly></textarea>
+        <div class="code-actions"><span class="code-size" id="size_settings"></span><button type="button" class="mini-btn" data-copy="settings">Kopyala</button></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="code-head"><div class="row-title">Sohbetler veri kodu</div><div class="row-desc">Sadece sohbetler ve yazışmalar. Her değişiklikte kendini günceller.</div></div>
+      <div class="code-box">
+        <textarea class="code" id="code_chats" readonly></textarea>
+        <div class="code-actions"><span class="code-size" id="size_chats"></span><button type="button" class="mini-btn" data-copy="chats">Kopyala</button></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="code-head"><div class="row-title">Tüm verilerin veri kodu</div><div class="row-desc">Sohbetler ve ayarların hepsi. Her değişiklikte kendini günceller.</div></div>
+      <div class="code-box">
+        <textarea class="code" id="code_all" readonly></textarea>
+        <div class="code-actions"><span class="code-size" id="size_all"></span><button type="button" class="mini-btn" data-copy="all">Kopyala</button></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="code-head"><div class="row-title">Kod ile içe aktar</div><div class="row-desc">Kopyaladığın veri kodunu yapıştır ve onayla.</div></div>
+      <div class="code-box">
+        <textarea class="code" id="pasteCode" placeholder="Veri kodunu buraya yapıştır"></textarea>
+        <div class="code-actions"><span class="code-size"></span><button type="button" class="mini-btn" id="btnCodeImport">Onayla</button></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="confirmModal">
+    <div class="modal">
+      <div class="modal-title">İçe aktarılsın mı?</div>
+      <div class="modal-desc" id="confirmDesc"></div>
+      <div class="modal-actions">
+        <button type="button" class="modal-btn btn-cancel" id="confirmNo">Vazgeç</button>
+        <button type="button" class="modal-btn btn-ok" id="confirmYes">İçe aktar</button>
+      </div>
+    </div>
+  </div>
+  <div class="toast" id="toastMsg"></div>
+
+  <script>
+  (function () {
+    var THEME_KEY = 'lumea-theme';
+    if (localStorage.getItem(THEME_KEY) === 'dark') document.body.setAttribute('data-theme', 'dark');
+
+    var toast = document.getElementById('toastMsg');
+    function showToast(m) {
+      toast.textContent = m; toast.classList.add('show');
+      setTimeout(function () { toast.classList.remove('show'); }, 2600);
+    }
+
+    document.getElementById('btnBack').addEventListener('click', function () {
+      window.location.href = 'ayarlar.html';
+    });
+
+    /* Sohbet verisi sayılan anahtarlar (ayar sayılmaz). Sohbetler farklı bir isimle
+       saklanıyorsa buraya ekle. */
+    var CHAT_RE = /chat|sohbet|mesaj|message|conversation|history|gecmis|geçmiş|yanit|yanıt|reply/i;
+    var OW_KEY = 'lumea-aktarim-uzerine-yaz';
+    /* Sohbet verisi sayılan anahtarlar. Sohbetler farklı isimle saklanıyorsa buraya ekle. */
+    var CHAT_RE = /chat|sohbet|mesaj|message|conversation|history|gecmis|geçmiş|yanit|yanıt|reply/i;
+    function isChatKey(k) { return CHAT_RE.test(k); }
+
+    function collect(scope) {
+      var data = {};
+      for (var i = 0; i < localStorage.length; i++) {
+        var k = localStorage.key(i);
+        if (k === OW_KEY) continue;
+        if (scope === 'settings' && isChatKey(k)) continue;
+        if (scope === 'chats' && !isChatKey(k)) continue;
+        data[k] = localStorage.getItem(k);
+      }
+      return data;
+    }
+    function buildPack(scope) {
+      return { app: 'Lumea', type: 'lui-veri-aktarimi', version: 3, scope: scope, exportedAt: new Date().toISOString(), data: collect(scope) };
+    }
+
+    /* ---- Veri kodu: JSON -> UTF-8 -> (gzip) -> base64 ---- */
+    function bytesToB64(bytes) {
+      var s = '', CH = 0x8000;
+      for (var i = 0; i < bytes.length; i += CH) s += String.fromCharCode.apply(null, bytes.subarray(i, i + CH));
+      return btoa(s);
+    }
+    function b64ToBytes(b64) {
+      var bin = atob(b64), out = new Uint8Array(bin.length);
+      for (var i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+      return out;
+    }
+    function streamBytes(bytes, Ctor, kind) {
+      var st = new Ctor(kind);
+      var w = st.writable.getWriter(); w.write(bytes); w.close();
+      return new Response(st.readable).arrayBuffer().then(function (b) { return new Uint8Array(b); });
+    }
+    function encodeCode(json) {
+      var bytes = new TextEncoder().encode(json);
+      if (typeof CompressionStream !== 'undefined') {
+        return streamBytes(bytes, CompressionStream, 'gzip')
+          .then(function (z) { return 'LUI1G-' + bytesToB64(z); })
+          .catch(function () { return 'LUI1-' + bytesToB64(bytes); });
+      }
+      return Promise.resolve('LUI1-' + bytesToB64(bytes));
+    }
+    function decodeCode(code) {
+      code = code.replace(/\s+/g, '');
+      if (code.indexOf('LUI1G-') === 0) {
+        if (typeof DecompressionStream === 'undefined') return Promise.reject(new Error('nogz'));
+        return streamBytes(b64ToBytes(code.slice(6)), DecompressionStream, 'gzip').then(function (b) { return new TextDecoder().decode(b); });
+      }
+      if (code.indexOf('LUI1-') === 0) return Promise.resolve(new TextDecoder().decode(b64ToBytes(code.slice(5))));
+      return Promise.reject(new Error('bad'));
+    }
+
+    /* Kodlar her değişiklikte güncellenir */
+    var SCOPES = ['settings', 'chats', 'all'];
+    var lastSig = {};
+    function fmtSize(n) { return n > 1048576 ? (n / 1048576).toFixed(1) + ' MB' : Math.max(1, Math.round(n / 1024)) + ' KB'; }
+    function refreshCodes() {
+      SCOPES.forEach(function (sc) {
+        var json = JSON.stringify(collect(sc));
+        if (lastSig[sc] === json) return;
+        lastSig[sc] = json;
+        var pack = buildPack(sc);
+        encodeCode(JSON.stringify(pack)).then(function (code) {
+          if (lastSig[sc] !== json) return;
+          document.getElementById('code_' + sc).value = code;
+          document.getElementById('size_' + sc).textContent = fmtSize(code.length);
+        });
+      });
+    }
+    refreshCodes();
+    setInterval(refreshCodes, 1500);
+    window.addEventListener('storage', refreshCodes);
+    window.addEventListener('focus', refreshCodes);
+    document.addEventListener('visibilitychange', refreshCodes);
+
+    function copyText(text, ta) {
+      var ok = false;
+      try { ta.focus(); ta.select(); ta.setSelectionRange(0, ta.value.length); ok = document.execCommand('copy'); } catch (e) {}
+      if (ok) { showToast('Kopyalandı'); return; }
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(function () { showToast('Kopyalandı'); }, function () { showToast('Kopyalanamadı, kodu elle seç'); });
+      } else showToast('Kopyalanamadı, kodu elle seç');
+    }
+    Array.prototype.forEach.call(document.querySelectorAll('[data-copy]'), function (b) {
+      b.addEventListener('click', function () {
+        var ta = document.getElementById('code_' + b.getAttribute('data-copy'));
+        if (!ta.value) { showToast('Kod hazırlanıyor, tekrar dene'); return; }
+        copyText(ta.value, ta);
+      });
+    });
+
+    /* ---- Üzerine yaz anahtarı ---- */
+    var ow = document.getElementById('owToggle');
+    var owDesc = document.getElementById('owDesc');
+    function owText() {
+      owDesc.textContent = ow.checked
+        ? 'Açık: mevcut sohbetler silinir, içe aktarılan veriler yüklenir'
+        : 'Kapalı: mevcut sohbetler korunur ve silinmez';
+    }
+    try { ow.checked = localStorage.getItem(OW_KEY) === '1'; } catch (e) {}
+    owText();
+    ow.addEventListener('change', function () {
+      try { localStorage.setItem(OW_KEY, ow.checked ? '1' : '0'); } catch (e) {}
+      owText();
+    });
+
+    function mergeValue(cur, inc) {
+      try {
+        var c = JSON.parse(cur), n = JSON.parse(inc);
+        if (Array.isArray(c) && Array.isArray(n)) {
+          var seen = {}, out = [];
+          c.concat(n).forEach(function (it) {
+            var id = (it && typeof it === 'object' && it.id != null) ? 'id:' + it.id : JSON.stringify(it);
+            if (!seen[id]) { seen[id] = 1; out.push(it); }
+          });
+          return JSON.stringify(out);
+        }
+        if (c && n && typeof c === 'object' && typeof n === 'object' && !Array.isArray(c) && !Array.isArray(n)) {
+          return JSON.stringify(Object.assign({}, n, c));
+        }
+      } catch (e) {}
+      return cur;
+    }
+
+    /* ---- Kod ile içe aktar ---- */
+    var modal = document.getElementById('confirmModal');
+    var pending = null;
+
+    function handlePack(text) {
+      try {
+        var pack = JSON.parse(text);
+        if (!pack || pack.type !== 'lui-veri-aktarimi' || !pack.data || typeof pack.data !== 'object') throw 0;
+        pending = pack;
+        var what = pack.scope === 'settings' ? 'Sadece ayarlar' : pack.scope === 'chats' ? 'Sadece sohbetler' : 'Tüm veriler (sohbetler + ayarlar)';
+        document.getElementById('confirmDesc').textContent = what + ' bulundu. ' + (ow.checked
+          ? 'Mevcut veriler silinip yedektekilerle değiştirilecek.'
+          : 'Mevcut sohbetler korunacak, yedektekiler eklenecek.');
+        modal.classList.add('active');
+      } catch (e) { showToast('Geçersiz veri kodu'); }
+    }
+
+    document.getElementById('btnCodeImport').addEventListener('click', function () {
+      var t = document.getElementById('pasteCode').value.trim();
+      if (!t) { showToast('Önce veri kodunu yapıştır'); return; }
+      if (t.charAt(0) === '{') { handlePack(t); return; }
+      decodeCode(t).then(handlePack, function (e) {
+        showToast(e && e.message === 'nogz' ? 'Bu cihaz sıkıştırılmış kodu açamıyor' : 'Geçersiz veri kodu');
+      });
+    });
+
+    document.getElementById('confirmNo').addEventListener('click', function () {
+      pending = null; modal.classList.remove('active');
+    });
+    document.getElementById('confirmYes').addEventListener('click', function () {
+      if (!pending) return;
+      try {
+        var data = pending.data, sc = pending.scope;
+        if (ow.checked) {
+          var del = [];
+          for (var i = 0; i < localStorage.length; i++) {
+            var k = localStorage.key(i);
+            if (k === OW_KEY) continue;
+            if (sc === 'settings' ? !isChatKey(k) : sc === 'chats' ? isChatKey(k) : true) del.push(k);
+          }
+          del.forEach(function (k) { localStorage.removeItem(k); });
+        }
+        Object.keys(data).forEach(function (k) {
+          if (k === OW_KEY || typeof data[k] !== 'string') return;
+          var cur = localStorage.getItem(k);
+          if (!ow.checked && cur !== null && isChatKey(k)) localStorage.setItem(k, mergeValue(cur, data[k]));
+          else localStorage.setItem(k, data[k]);
+        });
+        modal.classList.remove('active');
+        showToast('Veriler yüklendi');
+        setTimeout(function () { window.location.href = 'index.html'; }, 1200);
+      } catch (e) { showToast('İçe aktarma başarısız'); }
+    });
+    modal.addEventListener('click', function (e) { if (e.target === modal) { pending = null; modal.classList.remove('active'); } });
+  })();
+  </script>
+</body>
+</html>

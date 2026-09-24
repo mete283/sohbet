@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Bir sorun oluştu · Lumea</title>
+  <style>
+    :root {
+      --bg: #f4f5f8;
+      --text: #1c1c1e;
+      --card-bg: rgba(255, 255, 255, 0.85);
+      --border: rgba(0, 0, 0, 0.06);
+      --muted: #8e8e93;
+      --active-bg: rgba(0, 0, 0, 0.04);
+      --back-btn-bg: #ffffff;
+      --accent: #007aff;
+      --warn: #ff9f0a;
+      --warn-bg: rgba(255, 159, 10, 0.14);
+    }
+    [data-theme="dark"] {
+      --bg: #0d0d10;
+      --text: #f2f2f7;
+      --card-bg: rgba(28, 28, 34, 0.75);
+      --border: rgba(255, 255, 255, 0.07);
+      --muted: #8e8e93;
+      --active-bg: rgba(255, 255, 255, 0.06);
+      --back-btn-bg: #2c2c32;
+      --accent: #0a84ff;
+      --warn: #ffb340;
+      --warn-bg: rgba(255, 179, 64, 0.16);
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", system-ui, Roboto, sans-serif;
+      -webkit-tap-highlight-color: transparent !important;
+      -webkit-touch-callout: none !important;
+      -webkit-user-select: none;
+      user-select: none;
+      outline: none !important;
+    }
+    html, body {
+      width: 100%;
+      height: 100%;
+      background-color: var(--bg);
+      color: var(--text);
+      overflow-x: hidden;
+    }
+    svg { pointer-events: none; flex-shrink: 0; }
+
+    .page {
+      max-width: 480px;
+      min-height: 100%;
+      margin: 0 auto;
+      padding: 16px 18px max(28px, env(safe-area-inset-bottom));
+      display: flex;
+      flex-direction: column;
+    }
+    .top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 0 0 10px;
+    }
+    .title {
+      font-size: 24px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+    }
+    .back-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--back-btn-bg);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: transform 0.18s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+    .back-btn:active { transform: scale(0.92); }
+    .back-btn svg {
+      width: 18px;
+      height: 18px;
+      stroke: var(--text);
+      fill: none;
+      stroke-width: 2.2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .center {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 12px 0 40px;
+    }
+    .card {
+      width: 100%;
+      background: var(--card-bg);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border-radius: 26px;
+      border: 1px solid var(--border);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+      padding: 34px 22px 22px;
+      text-align: center;
+      animation: rise 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+    }
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .card { animation: none; }
+    }
+
+    .icon-wrap {
+      width: 68px;
+      height: 68px;
+      border-radius: 22px;
+      background: var(--warn-bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 18px;
+    }
+    .icon-wrap svg {
+      width: 32px;
+      height: 32px;
+      stroke: var(--warn);
+      fill: none;
+      stroke-width: 1.9;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .err-title {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 8px;
+    }
+    .beta {
+      display: inline-block;
+      background: #000;
+      color: #fff;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      line-height: 1;
+      padding: 3px 6px;
+      border-radius: 4px;
+      border: 1px solid rgba(255, 255, 255, 0.28);
+    }
+    body:not([data-theme="dark"]) .beta { border-color: #000; }
+    .err-desc {
+      font-size: 14px;
+      line-height: 1.5;
+      color: var(--muted);
+      max-width: 300px;
+      margin: 0 auto 26px;
+    }
+    .err-desc b {
+      color: var(--text);
+      font-weight: 600;
+    }
+    .actions {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .btn {
+      height: 46px;
+      border-radius: 15px;
+      border: none;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.12s ease;
+    }
+    .btn:active { transform: scale(0.97); }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-secondary { background: var(--active-bg); color: var(--text); }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="top">
+      <div class="title">Bir sorun oluştu</div>
+      <div class="back-btn" id="btnBack" aria-label="Geri" role="button">
+        <svg viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg>
+      </div>
+    </div>
+
+    <div class="center">
+      <div class="card">
+        <div class="icon-wrap">
+          <svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        </div>
+        <div class="err-title">Sayfa açılamadı <span class="beta">BETA</span></div>
+        <p class="err-desc" id="errDesc">Bu özellik beta aşamasında ve şu an kullanılamıyor. Daha sonra tekrar dene.</p>
+        <div class="actions">
+          <button type="button" class="btn btn-primary" id="btnBackSettings">Ayarlara dön</button>
+          <button type="button" class="btn btn-secondary" id="btnRetry">Tekrar dene</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      /* Tema: ayarlar sayfasıyla aynı anahtar */
+      try {
+        if (localStorage.getItem('lumea-theme') === 'dark') {
+          document.body.setAttribute('data-theme', 'dark');
+        }
+      } catch (e) {}
+
+      /* İsteğe bağlı: hata.html?ozellik=Kullanım şeklinde çağrılırsa özellik adı gösterilir */
+      try {
+        var name = new URLSearchParams(window.location.search).get('ozellik');
+        if (name) {
+          var desc = document.getElementById('errDesc');
+          desc.textContent = '';
+          var b = document.createElement('b');
+          b.textContent = name;
+          desc.appendChild(b);
+          desc.appendChild(document.createTextNode(' beta aşamasında ve şu an kullanılamıyor. Biraz sonra tekrar dene.'));
+        }
+      } catch (e) {}
+
+      function goSettings() { window.location.href = 'ayarlar.html'; }
+      document.getElementById('btnBack').addEventListener('click', goSettings);
+      document.getElementById('btnBackSettings').addEventListener('click', goSettings);
+      document.getElementById('btnRetry').addEventListener('click', function () {
+        if (document.referrer) window.history.back();
+        else window.location.reload();
+      });
+    })();
+  </script>
+</body>
+</html>
